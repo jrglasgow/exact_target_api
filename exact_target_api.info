@@ -3,4 +3,5 @@
 name = "ExactTarget API"
 description = "Provides abstraction of the ExactTarget XML API for use by other modules."
 package = Other
-core = 6.x
+core = 7.x
+configure = admin/config/system/exact-target-api

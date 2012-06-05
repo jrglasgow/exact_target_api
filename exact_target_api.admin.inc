@@ -5,9 +5,9 @@
  */
 
 /*
- * Implement callback for form construction
+ * Implements callback for form construction
  */
-function exact_target_api_configure_form($form_state) {
+function exact_target_api_configure_form($form, &$form_state) {
   $form = array();
   $cfg = _exact_target_api_get_config();
 
@@ -24,7 +24,7 @@ function exact_target_api_configure_form($form_state) {
   $form[ET_CFG_API_USER] = array(
     '#type' => 'textfield',
     '#title' => t('ExactTarget API Username'),
-    '#default_value' =>  (!empty($cfg[ET_CFG_API_USER])) ? $cfg[ET_CFG_API_USER] : '',
+    '#default_value' => (!empty($cfg[ET_CFG_API_USER])) ? $cfg[ET_CFG_API_USER] : '',
     '#required' => TRUE,
   );
   $form[ET_CFG_API_PASS] = array(
@@ -33,28 +33,28 @@ function exact_target_api_configure_form($form_state) {
     '#required' => TRUE,
   );
   /* Not sure if we need to add this at this time...
-  $form[ET_CFG_CHANNEL_MEMBER_ID] = array(
-    '#type' => 'textfield',
-    '#title' => t('ExactTarget Channel Member ID'),
-    '#default_value' =>  (!empty($cfg[ET_CFG_CHANNEL_MEMBER_ID])) ? $cfg[ET_CFG_CHANNEL_MEMBER_ID] : '',
-    '#required' => FALSE,
-  );
-  */
+   $form[ET_CFG_CHANNEL_MEMBER_ID] = array(
+   '#type' => 'textfield',
+   '#title' => t('ExactTarget Channel Member ID'),
+   '#default_value' =>  (!empty($cfg[ET_CFG_CHANNEL_MEMBER_ID])) ? $cfg[ET_CFG_CHANNEL_MEMBER_ID] : '',
+   '#required' => FALSE,
+   );
+   */
   $form['submit'] = array(
-    '#type' => 'submit', 
-    '#value' => t('Save')
+    '#type' => 'submit',
+    '#value' => t('Save'),
   );
-  
+
   return $form;
 }
 
 /*
- * Implement callback for validation of form 'exact_target_api_configure_form'
+ * Implements callback for validation of form 'exact_target_api_configure_form'
  */
 function exact_target_api_configure_form_validate($form, &$form_state) {
   // Go ahead and store the values as the test API call won't work otherwise: 
   _exact_target_api_set_config($form_state['values']);
-  
+
   // Test the new creds using the values we were just given:
   $lists = exact_target_api_get_lists();
   if (empty($lists)) {
@@ -67,11 +67,11 @@ function exact_target_api_configure_form_validate($form, &$form_state) {
 }
 
 /*
- * Implement callback for submit handling of form 'exact_target_api_configure_form'
+ * Implements callback for submit handling of form 'exact_target_api_configure_form'
  */
 function exact_target_api_configure_form_submit($form, &$form_state) {
   drupal_set_message(t('ExactTarget API settings successfully saved.'), 'status');
-  
+
   // Now initialize/refresh the subscription list cache so it doesn't bog down any future API calls
   $batch = array(
     'operations' => array(
@@ -88,8 +88,8 @@ function exact_target_api_configure_form_submit($form, &$form_state) {
 }
 
 /*
- * Implement callback for batch processing run
- * 
+ * Implements callback for batch processing run
+ *
  * Bits and pieces shamelessly copied from http://drupal.org/node/180528
  */
 function _exact_target_process_lists($lists, &$context) {
@@ -97,17 +97,20 @@ function _exact_target_process_lists($lists, &$context) {
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['max'] = count($lists);
   }
-  
+
   // Retrieve the next list's information and cache it
+
   $listid = $lists[$context['sandbox']['progress']];
   $listinfo = exact_target_api_get_list_info($listid);
 
   // Update our progress information.
+
   $context['sandbox']['progress']++;
   $context['results'][] = t('Processed ExactTarget list ID %id', array('%id' => $listid));
   $context['message'] = t('Now processing list %count of %max', array('%count' => $context['sandbox']['progress'], '%max' => $context['sandbox']['max']));
 
   // Inform the batch engine that we are not finished,
+
   // and provide an estimation of the completion level we reached.
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
@@ -115,19 +118,16 @@ function _exact_target_process_lists($lists, &$context) {
 }
 
 /*
- * Implement callback for completion of batch processing run
- * 
+ * Implements callback for completion of batch processing run
+ *
  * Shamelessly copied from http://drupal.org/node/180528
  */
 function _exact_target_process_lists_finished($success, $results, $operations) {
   if ($success) {
-    // Here we do something meaningful with the results.
-    $message = count($results) .' ExactTarget subscription lists processed.';
-    //$message .= theme('item_list', $results);
+    $message = count($results) . ' ExactTarget subscription lists processed.';
   }
   else {
     // An error occurred.
-    // $operations contains the operations that remained unprocessed.
     $error_operation = reset($operations);
     $message = t('An error occurred while processing %error_operation with arguments: @arguments', array('%error_operation' => $error_operation[0], '@arguments' => print_r($error_operation[1], TRUE)));
   }
