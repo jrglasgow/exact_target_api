@@ -41,3 +41,12 @@ function exact_target_api_schema() {
 
   return $schema;
 }
+
+/**
+ * Update the config variable to store a non-serialized version.
+ */
+function exact_target_api_update_7000() {
+  if ($config = variable_get(ET_CFG_VAR)) {
+    variable_set(ET_CFG_VAR, unserialize($config));
+  }
+}

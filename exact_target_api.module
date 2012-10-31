@@ -70,30 +70,20 @@ function exact_target_api_menu() {
  */
 
 /*
- * Helper function that minimizes DB queries to retrieve config info
+ * Helper function to retrieve config info
  */
 function _exact_target_api_get_config() {
-  static $cfg = array();
-
-  if (!$cfg) {
-    $tmp_cfg = unserialize(variable_get(ET_CFG_VAR, NULL));
-    if ($tmp_cfg) {
-      $cfg = $tmp_cfg;
-    }
-  }
-
-  return $cfg;
+  return variable_get(ET_CFG_VAR);
 }
 
 /*
- * Helper function that minimizes DB queries to store config info
+ * Helper function to store config info
  */
 function _exact_target_api_set_config($cfg) {
   if (is_array($cfg)) {
-    variable_set(ET_CFG_VAR, serialize($cfg));
+    variable_set(ET_CFG_VAR, $cfg);
   }
 }
-
 
 /*
  * Constructs and makes a call to ExactTarget API server
@@ -325,7 +315,6 @@ function exact_target_api_get_list_info($listid) {
     );
 
     $data = _exact_target_api_call('list', 'retrieve', $params);
-    dd($data);
     if ($data) {
       if (!empty($data->system->list)) {
         $listinfo = get_object_vars($data->system->list);
