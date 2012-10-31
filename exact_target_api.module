@@ -100,9 +100,11 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
   // Check to make sure we have credentials:
   if (!isset($cfg[ET_CFG_API_USER]) || !isset($cfg[ET_CFG_API_PASS])) {
     $msg = t('ExactTarget API credentials need to be set (user and password).  !click_here to set them.',  
-        array('!click_here' => l(t('Click here'), 'admin/config/exact-target-api')));
+        array('!click_here' => l(t('Click here'), 'admin/config/system/exact-target-api')));
     watchdog(ET_MSG_MODULE, $msg);
-    drupal_set_message($msg, 'error', FALSE);
+    if (user_access('administer site configuration')) {
+      drupal_set_message($msg, 'error', FALSE);
+    }
     return $return;
   }
 
