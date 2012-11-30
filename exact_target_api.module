@@ -163,8 +163,13 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
     }
     else {
       // No valid return received
-      watchdog(ET_MSG_MODULE, 'Call to ExactTarget server failed - dump from curl:<br /><pre>@dump</pre>', array('@dump' => print_r(curl_getinfo($ch), TRUE)));
+      watchdog(ET_MSG_MODULE, 'Call to ExactTarget server returned no valid response - dump from curl:<br /><pre>@dump</pre>', array('@dump' => print_r(curl_getinfo($ch), TRUE)), WATCHDOG_ERROR);
     }
+    // Record any cURL errors.
+    if ($error = curl_error($ch)) {
+      watchdog(ET_MSG_MODULE, 'Call to ExactTarget server failed with the following error message: @message', array('@message' => $error), WATCHDOG_ERROR);
+    }   
+    
     // Explicitly shut down connection to free resources
     curl_close($ch);
     unset($ch);
