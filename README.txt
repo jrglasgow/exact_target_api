@@ -1,4 +1,4 @@
--- SUMMARY --
+UMMARY --
 
 The ExactTarget API module provides abstraction of the ExactTarget XML API for 
 use by other modules. By itself, this module provides no functionality and 
@@ -33,6 +33,9 @@ Existing ExactTarget account with XML API access.
       2. S4 Instance Endpoint for customers using the S4 instance 
          (https://api.s4.exacttarget.com/integrate.aspx)
 
+      3. S6 Instance Endpoint for customers using the S6 instance 
+         (https://api.s6.exacttarget.com/integrate.aspx)
+
   - ExactTarget API Username
 
     Username associated with ExactTarget account
@@ -48,7 +51,7 @@ Under the hood ExactTarget API uses cURL to make requests to the appropriate API
 endpoint.
 
 * Additional cURL options such as proxy or cert can be set using 
-  hook_exacttarget_curl_alter(). See http://drupal.org/node/1830656 for more info.
+  hook_exact_target_api_curl_alter(). See http://drupal.org/node/1830656 for more info.
 
 
 
