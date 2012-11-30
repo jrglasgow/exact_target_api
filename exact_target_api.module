@@ -10,6 +10,7 @@
 define('ET_MSG_MODULE', 'exact_target_api');
 define('ET_XML_ENDPOINT_NORMAL', 'https://api.dc1.exacttarget.com/integrate.aspx');
 define('ET_XML_ENDPOINT_S4', 'https://api.s4.exacttarget.com/integrate.aspx');
+define('ET_XML_ENDPOINT_S6', 'https://api.s6.exacttarget.com/integrate.aspx');
 
 define('ET_CFG_VAR', 'exact_target_api_cfg');
 define('ET_CFG_ENDPOINT', 'et_cfg_endpoint');
