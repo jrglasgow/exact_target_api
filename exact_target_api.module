@@ -135,9 +135,13 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
     curl_setopt($ch, CURLOPT_POSTFIELDS, 'qf=xml&xml=' . rawurlencode($xml));
 
-    // Allow other modules to make changes
-    module_invoke_all('exact_target_api_curl_alter', $ch);
-    
+    // Allow other modules to make changes. module_invoke_all() throws
+    // notices in PHP5.3 since it cannot pass by reference
+    foreach (module_implements('exact_target_api_curl_alter') as $module) {
+      $function = $module . '_exact_target_api_curl_alter';
+      $function($ch);
+   }  
+ 
     $return_xml = curl_exec($ch);
 
     // See if we received a valid return value
