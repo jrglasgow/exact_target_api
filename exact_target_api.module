@@ -177,7 +177,7 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
     curl_setopt($ch, CURLOPT_POST, TRUE);
     curl_setopt($ch, CURLOPT_HEADER, FALSE);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, 'qf=xml&xml=' . $xml);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, 'qf=xml&xml=' . rawurlencode($xml));
     
     $return_xml = curl_exec($ch);
     
