@@ -602,16 +602,12 @@ function exact_target_api_update_subscriber($listid, $email, $fields = array()) 
   // Merge fields into default values and generate XML
 
   $arr_values = array_merge($def_values, $fields);
-  $values = '';
-  foreach ($arr_values as $key => $val) {
-    $values .= "<$key>$val</$key>";
-  }
 
   $params = array(
     'search_type' => 'listid',
     'search_value' => $listid,
     'search_value2' => $email,
-    'values' => $values,
+    'values' => $arr_values,
   );
 
   $data = _exact_target_api_call('subscriber', 'edit', $params);
