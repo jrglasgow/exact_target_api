@@ -4,7 +4,7 @@
  * This file contains the admin and GUI callbacks for the module that are not needed in day-to-day operations
  */
 
-/*
+/**
  * Implements callback for form construction
  */
 function exact_target_api_configure_form($form, &$form_state) {
@@ -48,7 +48,7 @@ function exact_target_api_configure_form($form, &$form_state) {
   return $form;
 }
 
-/*
+/**
  * Implements callback for validation of form 'exact_target_api_configure_form'
  */
 function exact_target_api_configure_form_validate($form, &$form_state) {
@@ -66,7 +66,7 @@ function exact_target_api_configure_form_validate($form, &$form_state) {
   }
 }
 
-/*
+/**
  * Implements callback for submit handling of form 'exact_target_api_configure_form'
  */
 function exact_target_api_configure_form_submit($form, &$form_state) {
@@ -87,7 +87,7 @@ function exact_target_api_configure_form_submit($form, &$form_state) {
   batch_set($batch);
 }
 
-/*
+/**
  * Implements callback for batch processing run
  *
  * Bits and pieces shamelessly copied from http://drupal.org/node/180528
@@ -117,7 +117,7 @@ function _exact_target_process_lists($lists, &$context) {
   }
 }
 
-/*
+/**
  * Implements callback for completion of batch processing run
  *
  * Shamelessly copied from http://drupal.org/node/180528
