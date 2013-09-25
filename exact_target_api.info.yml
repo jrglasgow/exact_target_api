@@ -1,0 +1,6 @@
+name: ExactTarget API
+type: module
+description: 'Provides abstraction of the ExactTarget XML API for use by other modules'
+package: Other
+core: 8.x
+configure: admin/config/system/exact-target-api
