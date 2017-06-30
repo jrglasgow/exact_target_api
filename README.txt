@@ -1,4 +1,4 @@
-UMMARY --
+SUMMARY --
 
 The ExactTarget API module provides abstraction of the ExactTarget XML API for 
 use by other modules. By itself, this module provides no functionality and 
@@ -13,7 +13,7 @@ To submit bug reports and feature suggestions, or to track changes:
 
 -- REQUIREMENTS --
 
-Existing ExactTarget account with XML API access.
+Existing ExactTarget account with API access.
 
 
 -- INSTALLATION --
