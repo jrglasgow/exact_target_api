@@ -16,6 +16,8 @@ define('ET_CFG_VAR', 'exact_target_api_cfg');
 define('ET_CFG_ENDPOINT', 'et_cfg_endpoint');
 define('ET_CFG_API_USER', 'et_api_user');
 define('ET_CFG_API_PASS', 'et_api_pass');
+define('ET_CFG_API_CLIENT_ID', 'et_api_client_id');
+define('ET_CFG_API_CLIENT_SECRET', 'et_api_client_secret');
 define('ET_CFG_CHANNEL_MEMBER_ID', 'et_channel_member_id');
 
 // Schema table and column names:
@@ -81,6 +83,11 @@ function _exact_target_api_get_config() {
  * Helper function to store config info
  */
 function _exact_target_api_set_config($cfg) {
+  $old_cfg = variable_get(ET_CFG_VAR, array());
+  $cfg['et_api_client_secret'] = $cfg['et_api_client_secret'] ?: $old_cfg['et_api_client_secret'];
+  tdpm($cfg, '$cfg');
+
+  tdpm($old_cfg, '$old_cfg');
   if (is_array($cfg)) {
     variable_set(ET_CFG_VAR, $cfg);
   }
@@ -100,7 +107,7 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
 
   // Check to make sure we have credentials:
   if (!isset($cfg[ET_CFG_API_USER]) || !isset($cfg[ET_CFG_API_PASS])) {
-    $msg = t('ExactTarget API credentials need to be set (user and password).  !click_here to set them.',  
+    $msg = t('ExactTarget API credentials need to be set (user and password).  !click_here to set them.',
         array('!click_here' => l(t('Click here'), 'admin/config/system/exact-target-api')));
     watchdog(ET_MSG_MODULE, $msg);
     if (user_access('administer site configuration')) {
@@ -148,9 +155,9 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
     if ($return_xml) {
       $return = new SimpleXMLElement($return_xml);
 
-      // Check XML response for error codes.  Since the error condition can be 
-      // reported under who-knows-how-many levels of XML tags, and ET doesn't 
-      // document their error responses worth a damn, we use an XPath query to 
+      // Check XML response for error codes.  Since the error condition can be
+      // reported under who-knows-how-many levels of XML tags, and ET doesn't
+      // document their error responses worth a damn, we use an XPath query to
       // find any occurence of the "error" tag
       $errors = $return->xpath('//error');
       if (!empty($errors)) {
@@ -159,7 +166,7 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
         $descrs = $return->xpath('//error_description[1]');
         $descr = (!empty($descrs)) ? $descrs[0] : '[No error text given]';
         watchdog(
-          ET_MSG_MODULE,  
+          ET_MSG_MODULE,
           t('Call to ExactTarget returned error code @code<br />@descr<br />@xml', array('@code' => (string) $code, '@descr' => (string) $descr, '@xml' => htmlspecialchars($xml)))
         );
 
@@ -173,8 +180,8 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
     // Record any cURL errors.
     if ($error = curl_error($ch)) {
       watchdog(ET_MSG_MODULE, 'Call to ExactTarget server failed with the following error message: @message', array('@message' => $error), WATCHDOG_ERROR);
-    }   
-    
+    }
+
     // Explicitly shut down connection to free resources
     curl_close($ch);
     unset($ch);
@@ -201,7 +208,7 @@ function exact_target_api_get_attributes() {
 
   $data = _exact_target_api_call('accountinfo', 'retrieve_attrbs');
   if ($data) {
-    // Make sure we have attributes 
+    // Make sure we have attributes
     if (!empty($data->system->profile->attribute)) {
       foreach ($data->system->profile->attribute as $attr) {
         // Extract the options before we flatten the object
@@ -302,7 +309,7 @@ function exact_target_api_get_list_info($listid) {
     ->fields('et')
     ->execute()
     ->fetchAssoc();
-    
+
     if ($result) {
       foreach ($result as $record) {
         $cache[$record[ET_COL_LISTID]] = $record;
@@ -415,7 +422,7 @@ function exact_target_api_rename_list($listid, $name) {
 }
 
 /**
- * Retrieves the profile and preference attributes for all subscribers on a 
+ * Retrieves the profile and preference attributes for all subscribers on a
  * specified list
  *
  * The List Retrieve Subscribers call retrieves the profile and preference
@@ -435,7 +442,7 @@ function exact_target_api_get_list_subscribers($listid, $status = '') {
 
   $data = _exact_target_api_call('list', 'retrieve_sub', $params);
   if ($data) {
-    // Make sure we have attributes 
+    // Make sure we have attributes
 
     if (!empty($data->system->list->subscribers->subscriber)) {
       foreach ($data->system->list->subscribers->subscriber as $sub) {
@@ -476,7 +483,7 @@ function exact_target_api_get_master_unsubscribe_list() {
 
   $data = _exact_target_api_call('tracking', 'retrieve', $params);
   if ($data) {
-    // Make sure we have attributes 
+    // Make sure we have attributes
     if (!empty($data->system->tracking->masterunsub->subscriber)) {
       foreach ($data->system->tracking->masterunsub->subscriber as $sub) {
         // Flatten object to array, scrub data a bit before storing off
@@ -628,7 +635,7 @@ function exact_target_api_update_subscriber($listid, $email, $fields = array()) 
  * one or more email addresses as input, and it returns a confirmation message
  * for each successful addition. This call cannot be used in Enterprise
  * accounts; you must use the Subscriber Add call with a status of unsub.
- * 
+ *
  * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/Subscriber_Management/Subscriber_Master_Unsub_%28Master_Unsubscribe_List%29
  */
 function exact_target_api_unsubscribe_master($email) {
@@ -648,7 +655,7 @@ function exact_target_api_unsubscribe_master($email) {
 }
 
 /**
- * Retrieves all profile and preference attribute values for a subscriber on a 
+ * Retrieves all profile and preference attribute values for a subscriber on a
  * specific list by ID
  *
  * The Subscriber Retrieve call retrieves all profile and preference attribute
@@ -672,7 +679,7 @@ function exact_target_api_get_subscriber_by_id($subid) {
 
   $data = _exact_target_api_call('subscriber', 'retrieve', $params);
   if ($data) {
-    // Make sure we have attributes 
+    // Make sure we have attributes
 
     if (!empty($data->system->subscriber)) {
       foreach ($data->system->subscriber as $sub) {
@@ -693,10 +700,10 @@ function exact_target_api_get_subscriber_by_id($subid) {
   return $subscriber_lists;
 }
 
-/** 
- * Retrieves all profile and preference attribute values for a subscriber on a 
+/**
+ * Retrieves all profile and preference attribute values for a subscriber on a
  * specific list by ID and email address.
- * 
+ *
  * @see exact_target_api_get_subscriber_by_id().
  */
 function exact_target_api_get_subscriber_by_email($email, $listid = '') {
@@ -709,7 +716,7 @@ function exact_target_api_get_subscriber_by_email($email, $listid = '') {
 
   $data = _exact_target_api_call('subscriber', 'retrieve', $params);
   if ($data) {
-    // Make sure we have attributes 
+    // Make sure we have attributes
 
     if (!empty($data->system->subscriber)) {
       foreach ($data->system->subscriber as $sub) {

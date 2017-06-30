@@ -13,24 +13,32 @@ function exact_target_api_configure_form($form, &$form_state) {
 
   $form[ET_CFG_ENDPOINT] = array(
     '#type' => 'select',
-    '#title' => t('ExactTarget API endpoint'),
-    '#description' => t('The URL that acts as the endpoint for the XML API calls, described <a href="http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/ExactTarget_XML_API_Technical_Reference" target="_blank">here</a>.  If you are not sure what your endpoint type is, refer to <a href="http://wiki.memberlandingpages.com/The_Getting_Started_Guide/Set_Up_Your_Account" target="_blank">this page</a>.'),
+    '#title' => t('App Center Authentication Target'),
+     '#description' => t('Login to <a href="https://appcenter.s1.marketingcloudapps.com">App Center</a>, select your app and in the "Authentication and Integration" section you will see the "Authentication Target"'),
     '#options' => array(
-      ET_XML_ENDPOINT_NORMAL => t('Normal Endpoint'),
-      ET_XML_ENDPOINT_S4 => t('S4 Instance Endpoint'),
+      NULL => t(' -- select an option -- '),
+      's1'  => t('S1 Instance'),
+      's4'  => t('S4 Instance'),
+      's6'  => t('S6 Instance'),
+      's7'  => t('S7 Instance'),
+      'test'  => t('Production Support (test) Instance'),
     ),
-    '#default_value' => (!empty($cfg[ET_CFG_ENDPOINT])) ? $cfg[ET_CFG_ENDPOINT] : ET_XML_ENDPOINT_NORMAL,
+    '#required' => TRUE,
+    '#default_value' => (!empty($cfg[ET_CFG_ENDPOINT])) ? $cfg[ET_CFG_ENDPOINT] : 'test',
   );
-  $form[ET_CFG_API_USER] = array(
+  $form[ET_CFG_API_CLIENT_ID] = array(
     '#type' => 'textfield',
-    '#title' => t('ExactTarget API Username'),
+    '#title' => t('App Center Client ID'),
+    '#description' => t('Login to <a href="https://appcenter.s1.marketingcloudapps.com">App Center</a>, select your app and in the "Authentication and Integration" section you will see the "Client ID"'),
     '#default_value' => (!empty($cfg[ET_CFG_API_USER])) ? $cfg[ET_CFG_API_USER] : '',
     '#required' => TRUE,
   );
-  $form[ET_CFG_API_PASS] = array(
+  $form[ET_CFG_API_CLIENT_SECRET] = array(
     '#type' => 'password',
-    '#title' => t('ExactTarget API Password'),
-    '#required' => TRUE,
+    '#title' => t('App Center Client Secret'),
+    '#description' => t('Login to <a href="https://appcenter.s1.marketingcloudapps.com">App Center</a>, select your app and in the "Authentication and Integration" section you will see the "Client Secret"'),
+    // this is not required because we don't want the user to have to enter in
+    // the secret again is ever making other changes on this page
   );
   /* Not sure if we need to add this at this time...
    $form[ET_CFG_CHANNEL_MEMBER_ID] = array(
@@ -39,7 +47,7 @@ function exact_target_api_configure_form($form, &$form_state) {
    '#default_value' =>  (!empty($cfg[ET_CFG_CHANNEL_MEMBER_ID])) ? $cfg[ET_CFG_CHANNEL_MEMBER_ID] : '',
    '#required' => FALSE,
    );
-   */
+  */
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
