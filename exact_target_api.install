@@ -7,6 +7,49 @@
 // Include our constants
 
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'exact_target_api') . '/exact_target_api.module';
+define('FUELSDK_PHP_LIBRARY_MIN_VERSION', '.9');
+
+/**
+ * Implements hook_requirements().
+ */
+function exact_target_api_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    $t = get_t();
+
+    // FuelSDK-PHP Library
+    $library = libraries_detect('FuelSDK-PHP');
+    $error_type = isset($library['error']) ? drupal_ucfirst($library['error']) : '';
+    $error_message = isset($library['error message']) ? $library['error message'] : '';
+
+    if (empty($library['installed'])) {
+      $requirements['FuelSDK-PHP'] = array(
+        'title' => $t('FuelSDK-PHP library'),
+        'value' => $t('@e: At least @a', array('@e' => $error_type, '@a' => FUELSDK_PHP_LIBRARY_MIN_VERSION)),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('!error You need to download the !library, extract the archive and place the contents in  the %path/!machine_name directory on your server.', array('!error' => $error_message, '!library' => l($t('FuelSDK-PHP library'), $library['download url']), '%path' => 'sites/all/libraries', '!machine_name' => $library['machine name'])),
+      );
+    }
+    elseif (version_compare($library['version'], FUELSDK_PHP_LIBRARY_MIN_VERSION, '>=')) {
+      $requirements['FuelSDK-PHP'] = array(
+        'title' => $t('FuelSDK-PHP Library'),
+        'severity' => REQUIREMENT_OK,
+        'value' => $library['version'],
+      );
+    }
+    else {
+      $requirements['FuelSDK-PHP'] = array(
+        'title' => $t('FuelSDK-PHP library'),
+        'value' => $t('At least @a', array('@a' => FUELSDK_PHP_LIBRARY_MIN_VERSION)),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('You need to download a later version of the !library and replace the old version located in the %path directory on your server.', array('!library' => l($t('FuelSDK-PHPL library'), $library['download url']), '%path' => $library['library path'])),
+      );
+    }
+  }
+
+  return $requirements;
+}
 
 /**
  * Implements hook_schema().

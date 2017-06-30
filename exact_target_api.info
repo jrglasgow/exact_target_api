@@ -5,3 +5,5 @@ description = "Provides abstraction of the ExactTarget XML API for use by other 
 package = Other
 core = 7.x
 configure = admin/config/system/exact-target-api
+
+dependencies[] = libraries
