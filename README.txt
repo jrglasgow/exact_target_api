@@ -1,8 +1,12 @@
 SUMMARY --
 
-The ExactTarget API module provides abstraction of the ExactTarget XML API for 
+The ExactTarget API module provides abstraction of the ExactTarget API for
 use by other modules. By itself, this module provides no functionality and 
 should only be installed if another module requires it as a dependency.
+
+Support is included the for FuelSDK-PHP library ( https://github.com/salesforce-marketingcloud/FuelSDK-PHP ) 
+and the Libraries API module. Documentation for the FuelSDK-PHP library can be found at https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/using-a-client-library.htm
+
 
 For a full description of the module, visit the project page:
   http://drupal.org/project/exact_target_api
