@@ -83,10 +83,9 @@ function _exact_target_api_get_config() {
  */
 function _exact_target_api_set_config($cfg) {
   $old_cfg = variable_get(ET_CFG_VAR, array());
+  // if the Client Secret wasn't set don't overwrite the one we have stored
   $cfg['et_api_client_secret'] = $cfg['et_api_client_secret'] ?: $old_cfg['et_api_client_secret'];
-  tdpm($cfg, '$cfg');
 
-  tdpm($old_cfg, '$old_cfg');
   if (is_array($cfg)) {
     variable_set(ET_CFG_VAR, $cfg);
   }
@@ -105,8 +104,8 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
   $params = array_merge($def_params, $params);
 
   // Check to make sure we have credentials:
-  if (!isset($cfg[ET_CFG_API_USER]) || !isset($cfg[ET_CFG_API_PASS])) {
-    $msg = t('ExactTarget API credentials need to be set (user and password).  !click_here to set them.',
+  if (!isset($cfg[ET_CFG_API_CLIENT_ID]) || !isset($cfg[ET_CFG_API_CLIENT_SECRET])) {
+    $msg = t('ExactTarget API credentials need to be set (id and secret).  !click_here to set them.',
         array('!click_here' => l(t('Click here'), 'admin/config/system/exact-target-api')));
     watchdog(ET_MSG_MODULE, $msg);
     if (user_access('administer site configuration')) {
@@ -277,28 +276,44 @@ function exact_target_api_get_groups() {
  * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Retrieve
  */
 function exact_target_api_get_lists() {
-  $lists = array();
-  $params = array(
-    'search_type' => 'listname',
-  );
+  $client = exact_target_api_get_client();
+  $list = new ET_List();
+  $list->authStub = $client;
+  $response = $list->get();
 
-  $data = _exact_target_api_call('list', 'retrieve', $params);
-  if ($data) {
-    if (!empty($data->system->list->listid)) {
-      foreach ($data->system->list->listid as $listid) {
-        $lists[] = (string) $listid;
-      }
-    }
-  }
-
+  $lists = $response->results;
   return $lists;
+}
+
+/**
+ * get an instance of the ET_Client with the current settings
+ */
+function exact_target_api_get_client() {
+  // WSDL and endpoint links are here https://developer.salesforce.com/docs/atlas.en-us.mc-apis.meta/mc-apis/getting_started_developers_and_the_exacttarget_api.htm
+  $cfg = _exact_target_api_get_config();
+  $library = libraries_load('FuelSDK-PHP');
+  $params = array(
+    //'defaultwsdl' => $cfg[''],
+    'clientid' => $cfg['et_api_client_id'],
+    'clientsecret' => $cfg['et_api_client_secret'],
+    //'appsignature' => $cfg[''],
+    'xmlloc'  => 'https://webservice.' . $cfg['et_cfg_endpoint'] . '.exacttarget.com/etframework.wsdl',
+  );
+  $myclient = new ET_Client(FALSE, FALSE, $params);
+  return $myclient;
 }
 
 /**
  * Retrieves list information for a given ID
  * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Retrieve
  */
-function exact_target_api_get_list_info($listid) {
+function exact_target_api_get_list_info($list) {
+  if (is_object($list)) {
+    $listid = $list->ID;
+  }
+  else {
+    $listid = $list;
+  }
   static $cache = array();
   $listinfo = array();
 
@@ -328,15 +343,17 @@ function exact_target_api_get_list_info($listid) {
       'search_value' => $listid,
     );
 
-    $data = _exact_target_api_call('list', 'retrieve', $params);
-    if ($data) {
-      if (!empty($data->system->list)) {
-        $listinfo = get_object_vars($data->system->list);
-        watchdog('exact_target_api', 'Fetched' . $data->system->list);
-        $listinfo[ET_COL_LISTID] = $listid;
+    if (is_object($list)) {
+      if (!empty($list)) {
 
         // Store in DB:
-        drupal_write_record(ET_TABLE_LIST_CACHE, $listinfo, ET_COL_LISTID);
+         $query = db_merge(ET_TABLE_LIST_CACHE)
+          ->key(array('listid' => $list->ID))
+          ->fields(array(
+            'list_name' => $list->ListName,
+            'list_type' => $list->Type,
+          ))
+          ->execute();
 
         // Store in static cache
         $cache[$listid] = $listinfo;

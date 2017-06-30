@@ -30,7 +30,7 @@ function exact_target_api_configure_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('App Center Client ID'),
     '#description' => t('Login to <a href="https://appcenter.s1.marketingcloudapps.com">App Center</a>, select your app and in the "Authentication and Integration" section you will see the "Client ID"'),
-    '#default_value' => (!empty($cfg[ET_CFG_API_USER])) ? $cfg[ET_CFG_API_USER] : '',
+    '#default_value' => (!empty($cfg[ET_CFG_API_CLIENT_ID])) ? $cfg[ET_CFG_API_CLIENT_ID] : '',
     '#required' => TRUE,
   );
   $form[ET_CFG_API_CLIENT_SECRET] = array(
@@ -108,8 +108,8 @@ function _exact_target_process_lists($lists, &$context) {
 
   // Retrieve the next list's information and cache it
 
-  $listid = $lists[$context['sandbox']['progress']];
-  $listinfo = exact_target_api_get_list_info($listid);
+  $list = $lists[$context['sandbox']['progress']];
+  $listinfo = exact_target_api_get_list_info($list);
 
   // Update our progress information.
 
