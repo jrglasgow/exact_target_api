@@ -61,7 +61,7 @@ endpoint.
 Current maintainers:
 * Katrin Silvius (nonsie) - http://drupal.org/user/29899
 * Robert Bates (arpieb) - http://drupal.org/user/533416
-
+* James Glasgow (jrglasgow) - 2.x branches - https://www.drupal.org/user/36590
 
 This project has been sponsored by:
 * Cool Blue Interactive
