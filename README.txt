@@ -28,36 +28,33 @@ Existing ExactTarget account with API access.
 -- CONFIGURATION --
 
 * Configure integration with ExactTarget API in Administration > Configuration >
-  System > ExactTarget API:
+  System > ExactTarget API, settings can be found in your App at
+  https://appcenter.s1.marketingcloudapps.com:
 
-  - Select ExactTarget API endpoint for the XML API calls. Possible options are:
-      1. Normal Endpoint for customers using the S1 instance 
-         (https://api.exacttarget.com/integrate.aspx)
+  - Select the "Authentication Target" for the API calls. Possible options are:
+      - S1 Instance
+      - S4 Instance
+      - S6 Instance
+      - S7 Instance
+      - Production Support (test) Instance
 
-      2. S4 Instance Endpoint for customers using the S4 instance 
-         (https://api.s4.exacttarget.com/integrate.aspx)
 
-      3. S6 Instance Endpoint for customers using the S6 instance 
-         (https://api.s6.exacttarget.com/integrate.aspx)
-
-  - ExactTarget API Username
-
-    Username associated with ExactTarget account
-
-  - ExactTarget API Password
-
-    Password associated with ExactTarget account
-
+  - ExactTarget API Client ID
+  - ExactTarget API Client Secret
 
 -- CUSTOMIZATION --
 
-Under the hood ExactTarget API uses cURL to make requests to the appropriate API 
-endpoint.
+Under the hood the FuelSDK uses cURL to make requests to the appropriate API
+endpoint. As we are currently using the SDK unmodified any cURL customizations
+need to be set in Environment Variables
+  - Proxy should be able to be set using
+    putenv('http_proxy=http://10.0.5.5:8080');
+    in your settings.php file, as proxies is something I need for my use case I
+    will be testing this and making accomodations if necessary.
 
-* Additional cURL options such as proxy or cert can be set using 
-  hook_exact_target_api_curl_alter(). See http://drupal.org/node/1830656 for more info.
-
-
+-- TO DO --
+* update and test all api functions
+* cache WSDL to local file system
 
 
 -- CONTACT --
@@ -65,7 +62,7 @@ endpoint.
 Current maintainers:
 * Katrin Silvius (nonsie) - http://drupal.org/user/29899
 * Robert Bates (arpieb) - http://drupal.org/user/533416
-* James Glasgow (jrglasgow) - 2.x branches - https://www.drupal.org/user/36590
+* James Glasgow (jrglasgow) - (7|8).x-2.x branches - https://www.drupal.org/user/36590
 
 This project has been sponsored by:
 * Cool Blue Interactive
