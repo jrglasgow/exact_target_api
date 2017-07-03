@@ -64,6 +64,16 @@ function exact_target_api_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  // TODO remove this MENU_CALLBACK to a test page
+  $items['admin/config/system/exact-target-api/test'] = array(
+    'title' => 'ExactTarget API',
+    'description' => 'Configure integration with Exact Target API',
+    'page callback' => 'exact_target_api_test_callback',
+    'access arguments' => array('administer site configuration'),
+    'file' => 'exact_target_api.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -318,6 +328,9 @@ function exact_target_api_get_lists($props = array(), $filter = array(), $array_
 
 /**
  * get an instance of the ET_Client with the current settings
+ *
+ * @return
+ *  An ET_Client object with authentication tokens already set.
  */
 function exact_target_api_get_client() {
   // WSDL and endpoint links are here https://developer.salesforce.com/docs/atlas.en-us.mc-apis.meta/mc-apis/getting_started_developers_and_the_exacttarget_api.htm
@@ -339,9 +352,11 @@ function exact_target_api_get_client() {
  * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Retrieve
 
  * TODO update to FuelSDK - really this is mostly done, though this function
- * mostly checks the database and servs that info. This needs to be re-thought
+ * mostly checks the database and serves that info. This needs to be re-thought
  */
 function exact_target_api_get_list_info($list) {
+  $cfg = _exact_target_api_get_config();
+
   if (is_object($list)) {
     $listid = $list->ID;
   }
@@ -355,12 +370,13 @@ function exact_target_api_get_list_info($list) {
   if (empty($cache)) {
     $result = db_select(ET_TABLE_LIST_CACHE, 'et')
     ->fields('et')
+    ->condition('update_timestamp', REQUEST_TIME - ($cfg['exact_target_list_cache_ttl'] ?: 86400),'>')
     ->execute()
-    ->fetchAssoc();
+    ->fetchAllAssoc('listid');
 
     if ($result) {
       foreach ($result as $record) {
-        $cache[$record[ET_COL_LISTID]] = $record;
+        $cache[$record->listid] = unserialize($record->list_object);
       }
     }
   }
@@ -372,10 +388,19 @@ function exact_target_api_get_list_info($list) {
 
   // If not, retrieve the info and cache it in the DB
   else {
-    $params = array(
-      'search_type' => 'listid',
-      'search_value' => $listid,
-    );
+    if (!is_object($list)) {
+      // the item passed in is not an object let's request this object from the
+      // remote server to use and cache
+      $filter = array(
+        'Property' => 'ID',
+        'SimpleOperator' => equals,
+        'Value' => $listid
+      );
+      $requested_result = exact_target_api_get_lists(array(), $filter);
+      if (!empty($requested_result[$listid])) {
+        $list = $listinfo = $requested_result[$listid];
+      }
+    }
 
     if (is_object($list)) {
       if (!empty($list)) {
@@ -386,6 +411,8 @@ function exact_target_api_get_list_info($list) {
           ->fields(array(
             'list_name' => $list->ListName,
             'list_type' => $list->Type,
+            'list_object' => serialize($list),
+            'update_timestamp' => REQUEST_TIME,
           ))
           ->execute();
 

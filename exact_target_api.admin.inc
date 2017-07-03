@@ -40,6 +40,19 @@ function exact_target_api_configure_form($form, &$form_state) {
     // this is not required because we don't want the user to have to enter in
     // the secret again is ever making other changes on this page
   );
+
+  $form['exact_target_list_cache_ttl'] = array(
+    '#type' => 'select',
+    '#title' => t('List Cache Time To Live (TTL)'),
+    '#description' => t('Upon submission of this form all available lists are requested from the Exact Target servers and the information is cached in the database. How old should we let these items become before they are cached again?'),
+    '#default_value' => variable_get('exact_target_list_cache_ttl', 86400),
+    '#options' => array(
+      600 => t('10 minutes'),
+      3600 => t('1 hour'),
+      86400 => t('1 day'),
+      604800 => t('1 week'),
+    ),
+  );
   /* Not sure if we need to add this at this time...
    $form[ET_CFG_CHANNEL_MEMBER_ID] = array(
    '#type' => 'textfield',
@@ -108,7 +121,7 @@ function _exact_target_process_lists($lists, &$context) {
 
   // Retrieve the next list's information and cache it
 
-  $list = $lists[$context['sandbox']['progress']];
+  $list = array_slice($lists,$context['sandbox']['progress'],1)[0];
   $listinfo = exact_target_api_get_list_info($list);
 
   // Update our progress information.
@@ -140,4 +153,13 @@ function _exact_target_process_lists_finished($success, $results, $operations) {
     $message = t('An error occurred while processing %error_operation with arguments: @arguments', array('%error_operation' => $error_operation[0], '@arguments' => print_r($error_operation[1], TRUE)));
   }
   drupal_set_message($message);
+}
+
+/**
+ * this is a testing callback so we can test API functionality.
+ * TODO remove this function
+ */
+function exact_target_api_test_callback() {
+  $list = exact_target_api_get_list_info('9234');
+  return 'testing';
 }

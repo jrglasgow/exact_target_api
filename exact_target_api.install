@@ -55,31 +55,40 @@ function exact_target_api_requirements($phase) {
  * Implements hook_schema().
  */
 function exact_target_api_schema() {
-  $schema = array();
 
-  // Define mapping storage for each webform
-
-  $schema[ET_TABLE_LIST_CACHE] = array(
+  $schema['et_list_cache'] = array(
     'description' => 'Table containing cached info for ET subscription lists',
     'fields' => array(
-      ET_COL_LISTID => array(
+      'listid' => array(
         'description' => 'ET Subscription list ID',
         'type' => 'varchar',
-        'length' => 255,
+        'length' => '255',
         'not null' => TRUE,
       ),
-      ET_COL_LIST_NAME => array(
+      'list_name' => array(
         'description' => 'ET Subscription list name',
         'type' => 'varchar',
-        'length' => 255,
+        'length' => '255',
+        'not null' => FALSE,
       ),
-      ET_COL_LIST_TYPE => array(
+      'list_type' => array(
         'description' => 'ET Subscription list type',
         'type' => 'varchar',
-        'length' => 255,
+        'length' => '255',
+        'not null' => FALSE,
       ),
-    ), // fields
-    'primary key' => array(ET_COL_LISTID),
+      'list_object' => array(
+        'description' => 'serialized cache of the list object',
+        'type' => 'blob',
+        'not null' => FALSE,
+      ),
+      'update_timestamp' => array(
+        'description' => 'timestamp for the last time the list object was updated',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('listid'),
   );
 
   return $schema;
@@ -92,4 +101,21 @@ function exact_target_api_update_7000() {
   if ($config = variable_get(ET_CFG_VAR)) {
     variable_set(ET_CFG_VAR, unserialize($config));
   }
+}
+
+/**
+ * update et_list_cache table to add list_object and update_timestamp fields
+ */
+function exact_target_api_update_7200() {
+  db_add_field('et_list_cache', 'list_object', array(
+    'description' => 'serialized cache of the list object',
+    'type' => 'blob',
+    'not null' => FALSE,
+  ));
+
+  db_add_field('et_list_cache', 'update_timestamp', array(
+    'description' => 'timestamp for the last time the list object was updated',
+    'type' => 'int',
+    'not null' => FALSE,
+  ));
 }
