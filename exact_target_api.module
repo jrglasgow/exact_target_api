@@ -348,11 +348,18 @@ function exact_target_api_get_client() {
 }
 
 /**
- * Retrieves list information for a given ID
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Retrieve
-
- * TODO update to FuelSDK - really this is mostly done, though this function
- * mostly checks the database and serves that info. This needs to be re-thought
+ * Retrieves list information for a given ID. If the items in in the db cache
+ * (unexpired) it is retrieved from there, else it is retrieved from the remote
+ * server, cached in the database, and returned
+ *
+ * @param $list
+ *  This is the numeric ID of the list or the list object. If the list object is
+ *  passed the object is cached in the database and the database timestamp for
+ *  that object is updated. If the ID is passed the database is queried and if
+ *  the list isn't cached or is expired it is fetched from the remote
+ * @return
+ *  the list object
+ * @see exact_target_api_get_lists
  */
 function exact_target_api_get_list_info($list) {
   $cfg = _exact_target_api_get_config();
