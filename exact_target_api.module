@@ -553,7 +553,8 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
  *
  * NOTE - date ranges are not implemented at this time
  * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/Subscriber_Management/Master_Unsub_Retrieve
- * TODO update to FuelSDK
+ * TODO update to FuelSDK - the FuelSDK doesn't provide a call for getting a
+ * Master Unsubscribe list
  */
 function exact_target_api_get_master_unsubscribe_list() {
   $listsubs = array();
@@ -583,44 +584,22 @@ function exact_target_api_get_master_unsubscribe_list() {
 }
 
 /**
- * Adds a subscriber to a subscriber list
+ * Adds a subscriber to a list
  *
- * The Subscriber Add call adds a subscriber to a subscriber list. The call
- * requires a listID and all applicable subscriber data, and you receive a
- * subscriberID for each subscriber successfully added to a list.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/Subscriber_Management/Subscriber_Add
- * TODO update to FuelSDK
+ * @param $listid
+ *  the ID of the list
+ * @param $email
+ *  String containing the e-mail address to send e-mails to.
+ * @return
+ *  ET_Post object with request status information including errors
+ * 
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/add-subscriber-to-list.htm
  */
-function exact_target_api_add_subscriber($listid, $fields = array(), $channel_member_id = '') {
-  // If no channel ID given, check config to make sure it wasn't accidentally omitted:
-  $cfg = _exact_target_api_get_config();
-  if (!empty($cfg[ET_CFG_CHANNEL_MEMBER_ID])) {
-    $channel_member_id = $cfg[ET_CFG_CHANNEL_MEMBER_ID];
-  }
+function exact_target_api_add_subscriber($listid, $email) {
 
-  $listsubs = array();
-  $def_values = array(
-    'status' => 'active',
-    'ChannelMemberID' => $channel_member_id,
-  );
-  // Merge fields into default values and generate XML
-
-  $arr_values = array_merge($def_values, $fields);
-
-  $params = array(
-    'search_type' => 'listid',
-    'search_value' => $listid,
-    'search_value2' => '',
-    'values' => $arr_values,
-  );
-
-  $data = _exact_target_api_call('subscriber', 'add', $params);
-  if ($data) {
-    // TODO - This either succeeds or fails - not sure if there is anything we should do with the response.
-
-  }
-
-  return $data;
+  $client = exact_target_api_get_client();
+  $response = $client->AddSubscriberToList($email, array($listid), $email);
+  return $response;
 }
 
 /**
