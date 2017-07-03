@@ -456,7 +456,7 @@ function exact_target_api_add_list($name, $description = 'SDK Created List', $ty
   $client = exact_target_api_get_client();
   $list = new ET_List();
   $list->authStub = $client;
-  $list->props = array("ListName" => $name, "Description" => $description, 'Type' => $type);
+  $list->props = array('ListName' => $name, 'Description' => $description, 'Type' => $type);
   $results = $list->post();
 
   return $results;
@@ -476,7 +476,7 @@ function exact_target_api_delete_list($listid) {
   $client = exact_target_api_get_client();
   $list = new ET_List();
   $list->authStub = $client;
-  $list->props = array("ID" => $listid);
+  $list->props = array('ID' => $listid);
   $results = $list->delete();
 
   return $results;
@@ -485,26 +485,23 @@ function exact_target_api_delete_list($listid) {
 /**
  * Renames a subscriber list
  *
- * The List Edit (Rename) call renames a subscriber list. The call requires a
- * listID as input and returns a confirmation message.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Edit_%28Rename%29
- * TODO update to FuelSDK
+ * @param $listid
+ *  String containing the ID of the list
+ * @param $name
+ *  String containing the new name for the list
+ * @return
+ *  ET_Patch objectcontaining results of update action
+ *
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-update.htm
  */
 function exact_target_api_rename_list($listid, $name) {
-  $result = array();
-  $params = array(
-    'search_type' => 'listid',
-    'search_value' => $listid,
-    'list_name' => $name,
-  );
+  $client = exact_target_api_get_client();
+  $list = new ET_List();
+  $list->authStub = $client;
+  $list->props = array('ID' => $listid, 'ListName'=> $name);
+  $results = $list->patch();
 
-  $data = _exact_target_api_call('list', 'edit', $params);
-  if ($data) {
-    // TODO - This either succeeds or fails - not sure if there is anything we should do with the response.
-
-  }
-
-  return $result;
+  return $results;
 }
 
 /**
