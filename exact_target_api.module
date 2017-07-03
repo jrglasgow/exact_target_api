@@ -465,26 +465,21 @@ function exact_target_api_add_list($name, $description = 'SDK Created List', $ty
 /**
  * Deletes a list and all subscribers who belong to that list
  *
- * The List Delete call deletes a list and all subscribers who belong to
- * that list. The call requires a listID as input and returns a confirmation
- * message.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Delete
- * TODO update to FuelSDK
+ * @param
+ *  String containing the Id of the list to delete
+ * @return
+ *  ET_Delete object containing results of delete action
+ *
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-delete.htm
  */
 function exact_target_api_delete_list($listid) {
-  $result = array();
-  $params = array(
-    'search_type' => 'listid',
-    'search_value' => $listid,
-  );
+  $client = exact_target_api_get_client();
+  $list = new ET_List();
+  $list->authStub = $client;
+  $list->props = array("ID" => $listid);
+  $results = $list->delete();
 
-  $data = _exact_target_api_call('list', 'delete', $params);
-  if ($data) {
-    // TODO - This either succeeds or fails - not sure if there is anything we should do with the response.
-
-  }
-
-  return $result;
+  return $results;
 }
 
 /**
