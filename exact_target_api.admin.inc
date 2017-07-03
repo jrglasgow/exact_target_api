@@ -160,6 +160,5 @@ function _exact_target_process_lists_finished($success, $results, $operations) {
  * TODO remove this function
  */
 function exact_target_api_test_callback() {
-  $list = exact_target_api_get_list_info('9234');
   return 'testing';
 }

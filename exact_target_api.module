@@ -439,23 +439,27 @@ function exact_target_api_get_list_info($list) {
  * list name and type as input, and you receive the listID of the new list
  * as a result of the call. Once the list has been created, you can add
  * subscribers.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Add
- * TODO update to FuelSDK
+ *
+ * @param $name
+ *  String containing a title for the list
+ * @param $description
+ *  String containing the description of the list
+ * @param $type
+ *  String containing either 'Public' or 'Private'
+ * @return
+ *  ET_Post object containing status information including IDs for the newly
+ *  created list
+ *
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-create.htm
  */
-function exact_target_api_add_list($name, $type = ET_LIST_PUBLIC) {
-  $result = array();
-  $params = array(
-    'list_type' => $type,
-    'list_name' => $name,
-  );
+function exact_target_api_add_list($name, $description = 'SDK Created List', $type = ET_LIST_PUBLIC) {
+  $client = exact_target_api_get_client();
+  $list = new ET_List();
+  $list->authStub = $client;
+  $list->props = array("ListName" => $name, "Description" => $description, 'Type' => $type);
+  $results = $list->post();
 
-  $data = _exact_target_api_call('list', 'add', $params);
-  if ($data) {
-    // TODO - This either succeeds or fails - not sure if there is anything we should do with the response.
-
-  }
-
-  return $result;
+  return $results;
 }
 
 /**
