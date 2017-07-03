@@ -284,10 +284,15 @@ function exact_target_api_get_groups() {
  *  An array of properties to return, if empty all properties will be returned
  * @param $filter
  *  A filter to limit the number of lists to be returned. @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-retrieve.htm#filter-get-requests
+ * @param $array_key
+ *  A String representing a property of the list object. This is the key the
+ *  array is keyed with. Caution, usage of some keys will cause data loss if
+ *  more than one list share that key. defaults to "ID" which is the numeric
+ *  unique ID of the list.
  * @return
- *  An array of list objects.
+ *  An array of list objects keyed by $array_key
  */
-function exact_target_api_get_lists($props = array(), $filter = array()) {
+function exact_target_api_get_lists($props = array(), $filter = array(), $array_key = 'ID') {
   $client = exact_target_api_get_client();
   $list = new ET_List();
   $list->authStub = $client;
@@ -302,7 +307,12 @@ function exact_target_api_get_lists($props = array(), $filter = array()) {
 
   $response = $list->get();
 
-  $lists = $response->results;
+  $old_lists = $response->results;
+  $lists = array();
+  foreach ($old_lists AS $this_list) {
+    $lists[$this_list->{$array_key}] = $this_list;
+  }
+
   return $lists;
 }
 
