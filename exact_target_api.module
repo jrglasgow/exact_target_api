@@ -508,43 +508,38 @@ function exact_target_api_rename_list($listid, $name) {
  * Retrieves the profile and preference attributes for all subscribers on a
  * specified list
  *
- * The List Retrieve Subscribers call retrieves the profile and preference
- * attributes for all subscribers on a specified list. You can filter these
- * results by including subscriber status in the call. You provide a listID
- * as input, and the call returns the values of all profile and preference
- * attributes of the subscribers on your list.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Retrieve_Subscribers
- * TODO update to FuelSDK
+ * @param $listid
+ *  String containing the ID of the list, if blank subscribers for all lists
+ *  will be returned
+ * @param $status
+ *  String representing the requested Status filter, either 'Active' or
+ *  'Unsubscribed'. As the SDK only allows for filtering on one Property at a
+ *  time the ListID takes precedence.
+ * @return
+ *  Array of objects representing list subscribers
+ *
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-subscriber-retrieve.htm
  */
-function exact_target_api_get_list_subscribers($listid, $status = '') {
-  $listsubs = array();
-  $params = array(
-    'search_type' => 'listid',
-    'search_value' => $listid,
-    'search_status' => $status,
-  );
-
-  $data = _exact_target_api_call('list', 'retrieve_sub', $params);
-  if ($data) {
-    // Make sure we have attributes
-
-    if (!empty($data->system->list->subscribers->subscriber)) {
-      foreach ($data->system->list->subscribers->subscriber as $sub) {
-        // Flatten object to array, scrub data a bit before storing off
-
-        $new_sub = get_object_vars($sub);
-        foreach ($new_sub as $key => $val) {
-          if (is_object($val)) {
-            $new_sub[$key] = '';
-          }
-        }
-
-        $listsubs[$new_sub['id']] = $new_sub;
-      }
-    }
+function exact_target_api_get_list_subscribers($listid = '', $status = '') {
+  $client = exact_target_api_get_client();
+  $listsubscriber = new ET_List_Subscriber();
+  $listsubscriber->authStub = $client;
+  if (!empty($status)) {
+    $listsubscriber->filter = array(
+      'Property' => 'Status',
+      'SimpleOperator' => 'equals',
+      'Value' => $status,
+    );
   }
-
-  return $listsubs;
+  if (!empty($listid)) {
+    $listsubscriber->filter = array(
+      'Property' => 'ListID',
+      'SimpleOperator' => 'equals',
+      'Value' => $listid,
+    );
+  }
+  $response = $listsubscriber->get();
+  return $response->results;
 }
 
 /**
