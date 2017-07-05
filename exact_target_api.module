@@ -514,7 +514,7 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
  * @return
  *  ET_Get object containing results of Organizations request.
  */
-function exact_target_organizations($props = array(), $filter = array()) {
+function exact_target_api_get_organizations($props = array(), $filter = array()) {
   $client = exact_target_api_get_client();
   $org = new ET_Organization();
   $org->authStub = $client;
