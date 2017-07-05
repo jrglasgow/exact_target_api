@@ -361,7 +361,7 @@ function exact_target_api_get_list_info($list) {
       // remote server to use and cache
       $filter = array(
         'Property' => 'ID',
-        'SimpleOperator' => equals,
+        'SimpleOperator' => 'equals',
         'Value' => $listid
       );
       $requested_result = exact_target_api_get_lists(array(), $filter);
@@ -504,7 +504,39 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
 }
 
 /**
- * Returns information about subscribers currently on the Master Unsubscribe list
+ * Return organizations
+ *
+ * @param $props
+ *  Array of properties to return
+ * @param $filter
+ *  Array containing filter directives for the search
+ *
+ * @return
+ *  ET_Get object containing results of Organizations request.
+ */
+function exact_target_organizations($props = array(), $filter = array()) {
+  $client = exact_target_api_get_client();
+  $org = new ET_Organization();
+  $org->authStub = $client;
+  if (!empty($props)) {
+    $org->props = $props;
+  }
+  if (!empty(filter)) {
+    $org->filter = $filter;
+  }
+  $response = $org->get();
+  return $response;
+}
+
+/**
+ * Returns information about subscribers currently on the Master Unsubscribe list.
+ * Technically there is not a Master Unsubscribe list any more, all subscribers
+ * are added to a list called 'All Subscribers'. in addition to any other list
+ * they may be on. If a subscriber's status is changes to 'Unsubscribe' on the
+ * 'All Subscribers' list then they are automatically Unsubscribed from all
+ * lists. If the subscriber is not Active on the 'All Subscribers' list then
+ * they cannot be subscribed to any list, or made 'Active' on any list until
+ * they are changed to Status='Active' in the 'All Subscribers' list.
  *
  * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-subscriber-retrieve.htm
  */
