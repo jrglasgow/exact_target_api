@@ -65,7 +65,7 @@ function _exact_target_api_set_config($cfg) {
 /**
  * Constructs and makes a call to ExactTarget API server
  *
- * TODO update to FuelSDK - or possibly remove
+ * TODO update to FuelSDK - or probably remove
  */
 function _exact_target_api_call($system_name, $action, $params = array()) {
   $cfg = _exact_target_api_get_config();
@@ -681,50 +681,43 @@ function exact_target_api_unsubscribe_master($email) {
 }
 
 /**
- * Retrieves all profile and preference attribute values for a subscriber on a
- * specific list by ID
+ * Retrieves all profile and preference attribute values for a subscriber
  *
- * The Subscriber Retrieve call retrieves all profile and preference attribute
- * values for a subscriber on a specific list. You can also use the call to
- * retrieve all attribute values for a subscriber and all lists to which the
- * subscriber belongs.
+ * @param $subid
+ *  String of the SubscriberKey - a unique identifier for the subscriber
+ *  (usually the e-mail address)
+ * @return
+ *  Object with Subscriber information and a lists property containing an array
+ *  of lists the user is (un)subscribed to
  *
- * The call requires an email address or subscriberID. You can also pass in a
- * listID to retrieve information from a specific list. The call returns all
- * attribute values (including subscriberID) for a subscriber, as well as all
- * applicable lists if specified.
- *
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/ExactTarget_XML_API_Technical_Reference/Subscriber_Management/Subscriber_Retrieve
- * TODO update to FuelSDK
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/subscriber-retrieve.htm
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-subscriber-retrieve.htm
  */
 function exact_target_api_get_subscriber_by_id($subid) {
-  $subscriber_lists = array();
-  $params = array(
-    'search_type' => 'subid',
-    'search_value' => $subid,
+  $client = exact_target_api_get_client();
+  $subscriber = new ET_Subscriber();
+  $subscriber->authStub = $client;
+  $subscriber->filter = array(
+    'Property' => 'SubscriberKey',
+    'SimpleOperator' => 'equals',
+    'Value' => $subid,
   );
+  $sub_response = $subscriber->get();
+  $subscriber = $sub_response->results[0];
+  $listsubscriber = new ET_List_Subscriber();
+  $listsubscriber->authStub = $client;
+  $listsubscriber->filter = array(
+    'Property' => 'SubscriberKey',
+    'SimpleOperator' => 'equals',
+    'Value' => $subid,
+  );
+  $list_response = $listsubscriber->get();
 
-  $data = _exact_target_api_call('subscriber', 'retrieve', $params);
-  if ($data) {
-    // Make sure we have attributes
-
-    if (!empty($data->system->subscriber)) {
-      foreach ($data->system->subscriber as $sub) {
-        // Flatten object to array, scrub data a bit before storing off
-
-        $new_sub = get_object_vars($sub);
-        foreach ($new_sub as $key => $val) {
-          if (is_object($val)) {
-            $new_sub[$key] = '';
-          }
-        }
-
-        $subscriber_lists[$new_sub['listid']] = $new_sub;
-      }
-    }
+  $subscriber->lists = array();
+  foreach ($list_response->results AS $this_list) {
+    $subscriber->lists[] = $this_list;
   }
-
-  return $subscriber_lists;
+  return $subscriber;
 }
 
 /**
