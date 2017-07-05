@@ -564,32 +564,69 @@ function exact_target_api_add_subscriber($listid, $email) {
 }
 
 /**
- * Removes a subscriber from a single list
+ * Removes a subscriber from a single list, the user will not be completely
+ * deleted and they will remain on the list, but their status will be changed to
+ * 'Unsubscribed'.
  *
- * To remove a subscriber from a single list, use the following syntax. The
- * subscriber will be removed from the specified list but will not be deleted
- * from other lists to which the subscriber may belong (unless the list ID
- * you use is that of the All Subscribers list, in which case the subscriber
- * will be deleted entirely).
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/Subscriber_Management/Subscriber_Delete
- * TODO update to FuelSDK - there doesn't appear to be an API call to remove a
- * subscriber from a single list
+ * @param $listid
+ *  String with the Id of the list
+ * @param $email
+ *  String with the email address to be removed from the list
+ * @param $subkey
+ *  String with the SubscriberKey for the user, If this is not provided the
+ *  $email will be used to lookup the subscriber and get the SubscriberKey
+ * @return
+ *  ET_Patch object with results information.
+ *
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/subscriber-update.htm
  */
-function exact_target_api_remove_subscriber($listid, $email) {
-  $result = array();
-  $params = array(
-    'search_type' => 'listid',
-    'search_value' => $listid,
-    'search_value2' => $email,
-  );
-
-  $data = _exact_target_api_call('subscriber', 'delete', $params);
-  if ($data) {
-    // TODO - This either succeeds or fails - not sure if there is anything we should do with the response.
-
+function exact_target_api_remove_subscriber($listid, $email, $subkey = NULL) {
+  $client = exact_target_api_get_client();
+  if (empty($subkey)) {
+    // fetch the subscriber because we don't have the subkey
+    $sub = exact_target_api_get_subscriber_by_email($email);
+    $subkey = $sub->SubscriberKey;
   }
 
-  return $result;
+
+  $lists = array(
+    'ID' => $listid,
+    'Status' => 'Unsubscribed',
+  );
+
+  $subscriber = new ET_Subscriber();
+  $subscriber->authStub = $client;
+  $subscriber->props = array(
+    'SubscriberKey' => $subkey,
+    'Lists' => $lists,
+  );
+  $results = $subscriber->patch();
+
+  return $results;
+}
+
+/**
+ * Unsubscribe a user from all lists. The user still appears on the list but the
+ * status is set to 'Unsubscribed'
+ *
+ * @param $email
+ *  String of the email address to unsibsribe.
+ * @return
+ *  ET_Patch object with results information.
+ */
+function exact_target_api_unsubscribe_all($email) {
+  $client = exact_target_api_get_client();
+  $sub = exact_target_api_get_subscriber_by_email($email);
+
+  $subscriber = new ET_Subscriber();
+  $subscriber->authStub = $client;
+  $subscriber->props = array(
+    'SubscriberKey' => $sub->SubscriberKey,
+    'Status' => 'Unsubscribed',
+  );
+  $results = $subscriber->patch();
+
+  return $results;
 }
 
 /**
@@ -623,32 +660,35 @@ function exact_target_api_delete_subscriber($subscriber_key) {
  * address and the listID or subscriberID if you are reactivating a
  * subscriber. The call returns a subscriberID for each subscriber successfully
  * updated.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/Subscriber_Management/Subscriber_Edit_%28Update%29
- * TODO update to FuelSDK
+ *
+ * @param $email
+ *  String representation of the user's email address
+ * @param $props
+ *  array of properties to set on the user account
+ * @param $subkey
+ *  String representation of the user's unique SubscriberKey. If this is left
+ *  blank an extra API call will be made to look up the user's SubscriberKey
+ *  using the email address provided
+ * @return
+ *  ET_Patch object with results information.
+ *
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/subscriber-update.htm
  */
-function exact_target_api_update_subscriber($listid, $email, $fields = array()) {
-  $listsubs = array();
-  $def_values = array(
-    'status' => 'active', 'ChannelMemberID',
-  );
-  // Merge fields into default values and generate XML
-
-  $arr_values = array_merge($def_values, $fields);
-
-  $params = array(
-    'search_type' => 'listid',
-    'search_value' => $listid,
-    'search_value2' => $email,
-    'values' => $arr_values,
-  );
-
-  $data = _exact_target_api_call('subscriber', 'edit', $params);
-  if ($data) {
-    // TODO - This either succeeds or fails - not sure if there is anything we should do with the response.
-
+function exact_target_api_update_subscriber($email, $props = array(), $subkey = NULL) {
+  $client = exact_target_api_get_client();
+  if (empty($subkey)) {
+    // fetch the subscriber because we don't have the subkey
+    $sub = exact_target_api_get_subscriber_by_email($email);
+    $subkey = $sub->SubscriberKey;
   }
-
-  return $listsubs;
+  $default_props = array(
+    'SubscriberKey' => $subkey,
+  );
+  $subscriber = new ET_Subscriber();
+  $subscriber->authStub = $client;
+  $subscriber->props = array_merge($default_props, $props);
+  $results = $subscriber->patch();
+  return $results;
 }
 
 /**
