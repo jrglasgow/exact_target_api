@@ -506,42 +506,34 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
 /**
  * Returns information about subscribers currently on the Master Unsubscribe list
  *
- * The Master Unsub Retrieve call returns information about subscribers
- * currently on the Master Unsubscribe list. You can specify a date range of
- * when the unsubscribe action took place as input or retrieve all
- * subscribers on the list. The call returns subscribers' names, email
- * addresses, and unsubscribe information.
- *
- * NOTE - date ranges are not implemented at this time
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/Subscriber_Management/Master_Unsub_Retrieve
- * TODO update to FuelSDK - the FuelSDK doesn't provide a call for getting a
- * Master Unsubscribe list
+ * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-subscriber-retrieve.htm
  */
 function exact_target_api_get_master_unsubscribe_list() {
-  $listsubs = array();
-  $params = array(
-    'sub_action' => 'masterunsub',
+  // The Master list is called 'All Subscribers'
+  $query = db_select('et_list_cache', 'et');
+  $query->addField('et', 'listid');
+  $query->condition('list_name', 'All Subscribers');
+  $result = $query->execute();
+  $master_list_id = $result->fetchField();
+
+  $client = exact_target_api_get_client();
+  $listsubscriber = new ET_List_Subscriber();
+  $listsubscriber->authStub = $client;
+  // the SDK doesn't allow for multiple filters to be applied, just one
+  $listsubscriber->filter = array(
+    'Property' => 'Status',
+    'SimpleOperator' => 'equals',
+    'Value' => 'Unsubscribed',
   );
-
-  $data = _exact_target_api_call('tracking', 'retrieve', $params);
-  if ($data) {
-    // Make sure we have attributes
-    if (!empty($data->system->tracking->masterunsub->subscriber)) {
-      foreach ($data->system->tracking->masterunsub->subscriber as $sub) {
-        // Flatten object to array, scrub data a bit before storing off
-        $new_sub = get_object_vars($sub);
-        foreach ($new_sub as $key => $val) {
-          if (is_object($val)) {
-            $new_sub[$key] = '';
-          }
-        }
-
-        $listsubs[$new_sub['subid']] = $new_sub;
-      }
+  $response = $listsubscriber->get();
+  foreach ($response->results AS $key => $subscriber) {
+    if ($subscriber->ListID != $master_list_id) {
+      // strip out all the subscribers not in the master list
+      unset($response->results[$key]);
     }
   }
-
-  return $listsubs;
+  $response->results = array_values($response->results);
+  return $response;
 }
 
 /**
