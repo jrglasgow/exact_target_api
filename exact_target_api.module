@@ -607,7 +607,10 @@ function exact_target_api_remove_subscriber($listid, $email, $subkey = NULL) {
 
 /**
  * Unsubscribe a user from all lists. The user still appears on the list but the
- * status is set to 'Unsubscribed'
+ * status is set to 'Unsubscribed'. This includes the "All Subscribers" list;
+ * with the user on the "All Subscribers" list set to "Unsubscribed" the user
+ * cannot be subscribed to any list until they are changed to "Active" on the
+ * "All Subscribers" list.
  *
  * @param $email
  *  String of the email address to unsibsribe.
@@ -634,7 +637,7 @@ function exact_target_api_unsubscribe_all($email) {
  *
  *
  * @param $subscriber_key
- *  String containing the SubscriberKey returned in liasts of subscribers. By
+ *  String containing the SubscriberKey returned in lists of subscribers. By
  *   default subscribers created by this module use the email address as the
  *   SubscriberKey
  * @return
@@ -694,30 +697,10 @@ function exact_target_api_update_subscriber($email, $props = array(), $subkey = 
 /**
  * Places one or more email addresses on your Master Unsubscribe list
  *
- * The Subscriber Master Unsub (Master Unsubscribe List) call places one or
- * more email addresses on your Master Unsubscribe list so that the email
- * address is never added to any of your subscribe lists. The call requires
- * one or more email addresses as input, and it returns a confirmation message
- * for each successful addition. This call cannot be used in Enterprise
- * accounts; you must use the Subscriber Add call with a status of unsub.
- *
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/Subscriber_Management/Subscriber_Master_Unsub_%28Master_Unsubscribe_List%29
- * TODO update to FuelSDK
+ * @see exact_target_api_unsubscribe_all().
  */
 function exact_target_api_unsubscribe_master($email) {
-  $result = array();
-  $params = array(
-    'search_type' => 'emailaddress',
-    'search_value' => '<emailaddress>' . $email . '</emailaddress>',
-  );
-
-  $data = _exact_target_api_call('subscriber', 'masterunsub', $params);
-  if ($data) {
-    // TODO - This either succeeds or fails - not sure if there is anything we should do with the response.
-
-  }
-
-  return $result;
+  return exact_target_api_unsubscribe_all($email);
 }
 
 /**
