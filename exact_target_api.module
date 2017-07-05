@@ -504,7 +504,7 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
 }
 
 /**
- * Return organizations
+ * Get organizations within the ExactTarget account.
  *
  * @param $props
  *  Array of properties to return
@@ -525,6 +525,31 @@ function exact_target_api_get_organizations($props = array(), $filter = array())
     $org->filter = $filter;
   }
   $response = $org->get();
+  return $response;
+}
+
+/**
+ * Get users with access to the ExactTarget account.
+ *
+ * @param $props
+ *  Array of properties to return
+ * @param $filter
+ *  Array containing filter directives for the search
+ *
+ * @return
+ *  ET_Get object containing results of Organizations request.
+ */
+function exact_target_api_get_users($props = array(), $filter = array()) {
+  $client = exact_target_api_get_client();
+  $user = new ET_User();
+  $user->authStub = $client;
+  if (!empty($props)) {
+    $user->props = $props;
+  }
+  if (!empty(filter)) {
+    $user->filter = $filter;
+  }
+  $response = $user->get();
   return $response;
 }
 
