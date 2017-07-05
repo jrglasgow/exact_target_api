@@ -5,45 +5,6 @@
  * internal "private" functions used to wrap the ExactTarget XML API.
  */
 
-// Constants for use throughout module
-
-define('ET_MSG_MODULE', 'exact_target_api');
-define('ET_XML_ENDPOINT_NORMAL', 'https://api.dc1.exacttarget.com/integrate.aspx');
-define('ET_XML_ENDPOINT_S4', 'https://api.s4.exacttarget.com/integrate.aspx');
-define('ET_XML_ENDPOINT_S6', 'https://api.s6.exacttarget.com/integrate.aspx');
-
-define('ET_CFG_VAR', 'exact_target_api_cfg');
-define('ET_CFG_ENDPOINT', 'et_cfg_endpoint');
-define('ET_CFG_API_USER', 'et_api_user');
-define('ET_CFG_API_PASS', 'et_api_pass');
-define('ET_CFG_API_CLIENT_ID', 'et_api_client_id');
-define('ET_CFG_API_CLIENT_SECRET', 'et_api_client_secret');
-define('ET_CFG_CHANNEL_MEMBER_ID', 'et_channel_member_id');
-
-// Schema table and column names:
-
-define('ET_TABLE_LIST_CACHE', 'et_list_cache');
-define('ET_COL_LISTID', 'listid');
-define('ET_COL_LIST_NAME', 'list_name');
-define('ET_COL_LIST_TYPE', 'list_type');
-
-// Convenience constants to help with ET
-
-define('ET_TRUE', 'True');
-define('ET_FALSE', 'False');
-
-define('ET_LIST_PUBLIC', 'Public');
-define('ET_LIST_PRIVATE', 'Private');
-define('ET_LIST_SALESFORCE', 'Salesforce');
-define('ET_LIST_MASTER', 'Master');
-define('ET_LIST_VIRTUAL', 'Virtual');
-
-define('ET_SUBSCRIBER_ACTIVE', 'Active');
-define('ET_SUBSCRIBER_UNSUBSCRIBED', 'Unsubscribed');
-define('ET_SUBSCRIBER_RETURNED', 'Returned');
-define('ET_SUBSCRIBER_UNDELIVERABLE', 'Undeliverable');
-define('ET_SUBSCRIBER_DELETED', 'Deleted');
-
 /*
  * Start of Drupal hook implementations
  */
@@ -85,19 +46,19 @@ function exact_target_api_menu() {
  * Helper function to retrieve config info
  */
 function _exact_target_api_get_config() {
-  return variable_get(ET_CFG_VAR);
+  return variable_get('exact_target_api_cfg');
 }
 
 /**
  * Helper function to store config info
  */
 function _exact_target_api_set_config($cfg) {
-  $old_cfg = variable_get(ET_CFG_VAR, array());
+  $old_cfg = variable_get('exact_target_api_cfg', array());
   // if the Client Secret wasn't set don't overwrite the one we have stored
   $cfg['et_api_client_secret'] = $cfg['et_api_client_secret'] ?: $old_cfg['et_api_client_secret'];
 
   if (is_array($cfg)) {
-    variable_set(ET_CFG_VAR, $cfg);
+    variable_set('exact_target_api_cfg', $cfg);
   }
 }
 
@@ -116,10 +77,10 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
   $params = array_merge($def_params, $params);
 
   // Check to make sure we have credentials:
-  if (!isset($cfg[ET_CFG_API_CLIENT_ID]) || !isset($cfg[ET_CFG_API_CLIENT_SECRET])) {
+  if (!isset($cfg['et_api_client_id']) || !isset($cfg['et_api_client_id'])) {
     $msg = t('ExactTarget API credentials need to be set (id and secret).  !click_here to set them.',
         array('!click_here' => l(t('Click here'), 'admin/config/system/exact-target-api')));
-    watchdog(ET_MSG_MODULE, $msg);
+    watchdog('exact_target_api', $msg);
     if (user_access('administer site configuration')) {
       drupal_set_message($msg, 'error', FALSE);
     }
@@ -142,10 +103,10 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
   $xml_arr['exacttarget']['system'] = array_merge($xml_arr['exacttarget']['system'], $params);
   $xml = '<?xml version="1.0"?>' . format_xml_elements($xml_arr);
 
-  watchdog(ET_MSG_MODULE, htmlspecialchars($xml));
+  watchdog('exact_target_api', htmlspecialchars($xml));
 
   // Create cURL instance and execute the request:
-  $ch = curl_init($cfg[ET_CFG_ENDPOINT]);
+  $ch = curl_init($cfg['et_cfg_endpoint']);
   if ($ch) {
     curl_setopt($ch, CURLOPT_POST, TRUE);
     curl_setopt($ch, CURLOPT_HEADER, FALSE);
@@ -176,7 +137,7 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
         $descrs = $return->xpath('//error_description[1]');
         $descr = (!empty($descrs)) ? $descrs[0] : '[No error text given]';
         watchdog(
-          ET_MSG_MODULE,
+          'exact_target_api',
           t('Call to ExactTarget returned error code @code<br />@descr<br />@xml', array('@code' => (string) $code, '@descr' => (string) $descr, '@xml' => htmlspecialchars($xml)))
         );
 
@@ -185,11 +146,11 @@ function _exact_target_api_call($system_name, $action, $params = array()) {
     }
     else {
       // No valid return received
-      watchdog(ET_MSG_MODULE, 'Call to ExactTarget server returned no valid response - dump from curl:<br /><pre>@dump</pre>', array('@dump' => print_r(curl_getinfo($ch), TRUE)), WATCHDOG_ERROR);
+      watchdog('exact_target_api', 'Call to ExactTarget server returned no valid response - dump from curl:<br /><pre>@dump</pre>', array('@dump' => print_r(curl_getinfo($ch), TRUE)), WATCHDOG_ERROR);
     }
     // Record any cURL errors.
     if ($error = curl_error($ch)) {
-      watchdog(ET_MSG_MODULE, 'Call to ExactTarget server failed with the following error message: @message', array('@message' => $error), WATCHDOG_ERROR);
+      watchdog('exact_target_api', 'Call to ExactTarget server failed with the following error message: @message', array('@message' => $error), WATCHDOG_ERROR);
     }
 
     // Explicitly shut down connection to free resources
@@ -375,7 +336,7 @@ function exact_target_api_get_list_info($list) {
 
   // Pre-pop our lookup cache for this page load from the DB
   if (empty($cache)) {
-    $result = db_select(ET_TABLE_LIST_CACHE, 'et')
+    $result = db_select('et_list_cache', 'et')
     ->fields('et')
     ->condition('update_timestamp', REQUEST_TIME - ($cfg['exact_target_list_cache_ttl'] ?: 86400),'>')
     ->execute()
@@ -413,7 +374,7 @@ function exact_target_api_get_list_info($list) {
       if (!empty($list)) {
 
         // Store in DB:
-         $query = db_merge(ET_TABLE_LIST_CACHE)
+         $query = db_merge('et_list_cache')
           ->key(array('listid' => $list->ID))
           ->fields(array(
             'list_name' => $list->ListName,
@@ -452,7 +413,7 @@ function exact_target_api_get_list_info($list) {
  *
  * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-create.htm
  */
-function exact_target_api_add_list($name, $description = 'SDK Created List', $type = ET_LIST_PUBLIC) {
+function exact_target_api_add_list($name, $description = 'SDK Created List', $type = 'Public') {
   $client = exact_target_api_get_client();
   $list = new ET_List();
   $list->authStub = $client;

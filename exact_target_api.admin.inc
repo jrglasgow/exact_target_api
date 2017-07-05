@@ -11,7 +11,7 @@ function exact_target_api_configure_form($form, &$form_state) {
   $form = array();
   $cfg = _exact_target_api_get_config();
 
-  $form[ET_CFG_ENDPOINT] = array(
+  $form['et_cfg_endpoint'] = array(
     '#type' => 'select',
     '#title' => t('App Center Authentication Target'),
      '#description' => t('Login to <a href="https://appcenter.s1.marketingcloudapps.com">App Center</a>, select your app and in the "Authentication and Integration" section you will see the "Authentication Target"'),
@@ -24,16 +24,16 @@ function exact_target_api_configure_form($form, &$form_state) {
       'test'  => t('Production Support (test) Instance'),
     ),
     '#required' => TRUE,
-    '#default_value' => (!empty($cfg[ET_CFG_ENDPOINT])) ? $cfg[ET_CFG_ENDPOINT] : 'test',
+    '#default_value' => (!empty($cfg['et_cfg_endpoint'])) ? $cfg['et_cfg_endpoint'] : 'test',
   );
-  $form[ET_CFG_API_CLIENT_ID] = array(
+  $form['et_api_client_id'] = array(
     '#type' => 'textfield',
     '#title' => t('App Center Client ID'),
     '#description' => t('Login to <a href="https://appcenter.s1.marketingcloudapps.com">App Center</a>, select your app and in the "Authentication and Integration" section you will see the "Client ID"'),
-    '#default_value' => (!empty($cfg[ET_CFG_API_CLIENT_ID])) ? $cfg[ET_CFG_API_CLIENT_ID] : '',
+    '#default_value' => (!empty($cfg['et_api_client_id'])) ? $cfg['et_api_client_id'] : '',
     '#required' => TRUE,
   );
-  $form[ET_CFG_API_CLIENT_SECRET] = array(
+  $form['et_api_client_secret'] = array(
     '#type' => 'password',
     '#title' => t('App Center Client Secret'),
     '#description' => t('Login to <a href="https://appcenter.s1.marketingcloudapps.com">App Center</a>, select your app and in the "Authentication and Integration" section you will see the "Client Secret"'),
@@ -54,10 +54,10 @@ function exact_target_api_configure_form($form, &$form_state) {
     ),
   );
   /* Not sure if we need to add this at this time...
-   $form[ET_CFG_CHANNEL_MEMBER_ID] = array(
+   $form['et_channel_member_id'] = array(
    '#type' => 'textfield',
    '#title' => t('ExactTarget Channel Member ID'),
-   '#default_value' =>  (!empty($cfg[ET_CFG_CHANNEL_MEMBER_ID])) ? $cfg[ET_CFG_CHANNEL_MEMBER_ID] : '',
+   '#default_value' =>  (!empty($cfg['et_channel_member_id'])) ? $cfg['et_channel_member_id'] : '',
    '#required' => FALSE,
    );
   */
