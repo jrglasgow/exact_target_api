@@ -683,9 +683,11 @@ function exact_target_api_unsubscribe_master($email) {
 /**
  * Retrieves all profile and preference attribute values for a subscriber
  *
- * @param $subid
- *  String of the SubscriberKey - a unique identifier for the subscriber
- *  (usually the e-mail address)
+ * @param $id
+ *  String of the key to search on, usually the e-mail address or subscriber key
+ * @param $key
+ *  String with name of property to search on for the ID, usually 'EmalAddress'
+ *  or 'SubscriberKey'
  * @return
  *  Object with Subscriber information and a lists property containing an array
  *  of lists the user is (un)subscribed to
@@ -693,14 +695,14 @@ function exact_target_api_unsubscribe_master($email) {
  * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/subscriber-retrieve.htm
  * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-subscriber-retrieve.htm
  */
-function exact_target_api_get_subscriber_by_id($subid) {
+function exact_target_api_get_subscriber_by_id($id, $key = 'SubscriberKey') {
   $client = exact_target_api_get_client();
   $subscriber = new ET_Subscriber();
   $subscriber->authStub = $client;
   $subscriber->filter = array(
-    'Property' => 'SubscriberKey',
+    'Property' => $key,
     'SimpleOperator' => 'equals',
-    'Value' => $subid,
+    'Value' => $id,
   );
   $sub_response = $subscriber->get();
   $subscriber = $sub_response->results[0];
@@ -709,7 +711,7 @@ function exact_target_api_get_subscriber_by_id($subid) {
   $listsubscriber->filter = array(
     'Property' => 'SubscriberKey',
     'SimpleOperator' => 'equals',
-    'Value' => $subid,
+    'Value' => $subscriber->SubscriberKey,
   );
   $list_response = $listsubscriber->get();
 
@@ -721,41 +723,19 @@ function exact_target_api_get_subscriber_by_id($subid) {
 }
 
 /**
- * Retrieves all profile and preference attribute values for a subscriber on a
- * specific list by ID and email address.
+ * Retrieves all profile and preference attribute values for a subscriber by
+ * email address.
+ *
+ * @param $email
+ *  String with the email address
+ * @return
+ *  Object with Subscriber information and a lists property containing an array
+ *  of lists the user is (un)subscribed to
  *
  * @see exact_target_api_get_subscriber_by_id().
- * TODO update to FuelSDK
  */
-function exact_target_api_get_subscriber_by_email($email, $listid = '') {
-  $subscriber_lists = array();
-  $params = array(
-    'search_type' => 'listid',
-    'search_value' => $listid,
-    'search_value2' => $email,
-  );
-
-  $data = _exact_target_api_call('subscriber', 'retrieve', $params);
-  if ($data) {
-    // Make sure we have attributes
-
-    if (!empty($data->system->subscriber)) {
-      foreach ($data->system->subscriber as $sub) {
-        // Flatten object to array, scrub data a bit before storing off
-
-        $new_sub = get_object_vars($sub);
-        foreach ($new_sub as $key => $val) {
-          if (is_object($val)) {
-            $new_sub[$key] = '';
-          }
-        }
-
-        $subscriber_lists[$new_sub['listid']] = $new_sub;
-      }
-    }
-  }
-
-  return $subscriber_lists;
+function exact_target_api_get_subscriber_by_email($email) {
+  return exact_target_api_get_subscriber_by_id($email, 'EmailAddress');
 }
 
 /**
