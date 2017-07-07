@@ -57,61 +57,6 @@ function _exact_target_api_set_config($cfg) {
  */
 
 /**
- * Retrieves profile and preference attributes defined in the ET account
- *
- * The Attributes (Account Info) Retrieve call retrieves the profile and
- * preference attributes defined in your account. The call requires no
- * additional input, and it returns the details of your attribute
- * definitions.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/Attributes_%28Account_Info%29_Retrieve
- * TODO update to FuelSDK
- * @see
- */
-function exact_target_api_get_attributes() {
-  $attrs = array();
-
-  $data = _exact_target_api_call('accountinfo', 'retrieve_attrbs');
-  if ($data) {
-    // Make sure we have attributes
-    if (!empty($data->system->profile->attribute)) {
-      foreach ($data->system->profile->attribute as $attr) {
-        // Extract the options before we flatten the object
-        $attr_values = array();
-        if (!empty($attr->values->value)) {
-          foreach ($attr->values->value as $value) {
-            $attr_values[] = (string) $value;
-          }
-        }
-        // Flatten object to array, scrub data a bit before storing off
-        $new_attr = get_object_vars($attr);
-        if (!empty($attr_values)) {
-          $new_attr['values'] = $attr_values;
-        }
-        $new_attr['hidden'] = (is_object($new_attr['display'])) ? TRUE : FALSE;
-        $new_attr['min_size'] = (int) $new_attr['min_size'];
-        $new_attr['max_size'] = (int) $new_attr['max_size'];
-
-        // Anything else left as an object can be wiped out:
-        foreach ($new_attr as $key => $val) {
-          if (is_object($val)) {
-            $new_attr[$key] = '';
-          }
-        }
-        if ('Email Type' != $new_attr['name']) {
-          $new_attr['fieldid'] = str_replace(' ', '__', $new_attr['name']);
-        }
-        else {
-          $new_attr['fieldid'] = str_replace(' ', '', $new_attr['name']);
-        }
-        $attrs[$new_attr['fieldid']] = $new_attr;
-      }
-    }
-  }
-
-  return $attrs;
-}
-
-/**
  * Retrieves all groups in the ET account
  *
  * The List Retrieve Groups (All Groups) retrieves all groups in your
