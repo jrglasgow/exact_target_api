@@ -57,6 +57,23 @@ function _exact_target_api_set_config($cfg) {
  */
 
 /**
+ * Retrieves profile andpreference attributes defined in the ET account
+ *
+ * The Attributes (Account Info) Retrieve call retrieves the profile and
+ * preference attributes defined in your account. The call requires no
+ * additional input, and it returns the details of your attribute
+ * definitions.
+ * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/Attributes_%28Account_Info%29_Retrieve
+ */
+function exact_target_api_get_attributes() {
+  $client = exact_target_api_get_client();
+  $dataextensioncolumn = new ET_DataExtension_Column();
+  $dataextensioncolumn->authStub = $client;
+  $response = $dataextensioncolumn->get();
+  return $response;
+}
+
+/**
  * Retrieves all lists for this account
  * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-retrieve.htm
  *
