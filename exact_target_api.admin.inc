@@ -155,10 +155,3 @@ function _exact_target_process_lists_finished($success, $results, $operations) {
   drupal_set_message($message);
 }
 
-/**
- * this is a testing callback so we can test API functionality.
- * TODO remove this function
- */
-function exact_target_api_test_callback() {
-  return 'testing';
-}

@@ -49,7 +49,7 @@ endpoint. As we are currently using the SDK unmodified any cURL customizations
 need to be set in Environment Variables
   - Proxy should be able to be set using
     putenv('http_proxy=http://10.0.5.5:8080');
-    in your settings.php file, as proxies is something I need for my use case I
+    in your settings.php file, as proxy usage something I need for my use case I
     will be testing this and making accomodations if necessary.
 
 -- TO DO --

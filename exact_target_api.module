@@ -25,16 +25,6 @@ function exact_target_api_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  // TODO remove this MENU_CALLBACK to a test page
-  $items['admin/config/system/exact-target-api/test'] = array(
-    'title' => 'ExactTarget API',
-    'description' => 'Configure integration with Exact Target API',
-    'page callback' => 'exact_target_api_test_callback',
-    'access arguments' => array('administer site configuration'),
-    'file' => 'exact_target_api.admin.inc',
-    'type' => MENU_CALLBACK,
-  );
-
   return $items;
 }
 
