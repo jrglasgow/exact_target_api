@@ -15,7 +15,7 @@
 function exact_target_api_menu() {
   $items = array();
 
-  $items['admin/config/system/exact-target-api'] = array(
+  $items['admin/config/services/exact-target-api'] = array(
     'title' => 'ExactTarget API',
     'description' => 'Configure integration with Exact Target API',
     'page callback' => 'drupal_get_form',
