@@ -57,33 +57,6 @@ function _exact_target_api_set_config($cfg) {
  */
 
 /**
- * Retrieves all groups in the ET account
- *
- * The List Retrieve Groups (All Groups) retrieves all groups in your
- * account. No additional input is required, and the call returns the ID,
- * name, description, and parent list ID of all groups in your account.
- * @see http://wiki.memberlandingpages.com/030_Developer_Documentation/040_XML_API/XML_API_Calls_and_Sample_Code/List_Management/List_Retrieve_Groups_%28All_Groups%29
- * TODO update to FuelSDK
- */
-function exact_target_api_get_groups() {
-  $groups = array();
-  $params = array(
-    'search_type' => 'groups',
-  );
-
-  $data = _exact_target_api_call('list', 'retrievegroups', $params);
-  if ($data) {
-    if (!empty($data->system->list->groups->group)) {
-      foreach ($data->system->list->groups->group as $group) {
-        $new_group = get_object_vars($group);
-        $groups[$new_group['groupID']] = $new_group;
-      }
-    }
-  }
-  return $groups;
-}
-
-/**
  * Retrieves all lists for this account
  * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-retrieve.htm
  *
