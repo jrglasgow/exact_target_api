@@ -67,6 +67,9 @@ function _exact_target_api_set_config($cfg) {
  */
 function exact_target_api_get_attributes($filter = array()) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $dataextensioncolumn = new ET_DataExtension_Column();
     $dataextensioncolumn->authStub = $client;
@@ -111,6 +114,9 @@ function exact_target_api_log($e) {
  */
 function exact_target_api_get_lists($props = array(), $filter = array(), $array_key = 'ID') {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $list = new ET_List();
     $list->authStub = $client;
@@ -160,6 +166,7 @@ function exact_target_api_get_client() {
   }
   catch (Exception $e) {
     exact_target_api_log($e);
+    return FALSE;
   }
   return $myclient;
 }
@@ -271,6 +278,9 @@ function exact_target_api_get_list_info($list) {
  */
 function exact_target_api_add_list($name, $description = 'SDK Created List', $type = 'Public') {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $list = new ET_List();
     $list->authStub = $client;
@@ -296,6 +306,9 @@ function exact_target_api_add_list($name, $description = 'SDK Created List', $ty
  */
 function exact_target_api_delete_list($listid) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $list = new ET_List();
     $list->authStub = $client;
@@ -323,6 +336,9 @@ function exact_target_api_delete_list($listid) {
  */
 function exact_target_api_rename_list($listid, $name) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $list = new ET_List();
     $list->authStub = $client;
@@ -354,6 +370,9 @@ function exact_target_api_rename_list($listid, $name) {
  */
 function exact_target_api_get_list_subscribers($listid = '', $status = '') {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $listsubscriber = new ET_List_Subscriber();
     $listsubscriber->authStub = $client;
@@ -393,6 +412,9 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
  */
 function exact_target_api_get_organizations($props = array(), $filter = array()) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $org = new ET_Organization();
     $org->authStub = $client;
@@ -423,6 +445,9 @@ function exact_target_api_get_organizations($props = array(), $filter = array())
  */
 function exact_target_api_get_users($props = array(), $filter = array()) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $user = new ET_User();
     $user->authStub = $client;
@@ -461,6 +486,9 @@ function exact_target_api_get_master_unsubscribe_list() {
   $master_list_id = $result->fetchField();
 
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $listsubscriber = new ET_List_Subscriber();
     $listsubscriber->authStub = $client;
@@ -503,6 +531,9 @@ function exact_target_api_add_subscriber($listid, $email) {
   }
 
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $response = $client->AddSubscriberToList($email, $listid, $email);
   }
@@ -531,6 +562,9 @@ function exact_target_api_add_subscriber($listid, $email) {
  */
 function exact_target_api_remove_subscriber($listid, $email, $subkey = NULL) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   if (empty($subkey)) {
     // fetch the subscriber because we don't have the subkey
     $sub = exact_target_api_get_subscriber_by_email($email);
@@ -572,6 +606,9 @@ function exact_target_api_remove_subscriber($listid, $email, $subkey = NULL) {
  */
 function exact_target_api_unsubscribe_all($email) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   $sub = exact_target_api_get_subscriber_by_email($email);
   try {
     $subscriber = new ET_Subscriber();
@@ -604,6 +641,9 @@ function exact_target_api_unsubscribe_all($email) {
  */
 function exact_target_api_delete_subscriber($subscriber_key) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $subscriber = new ET_Subscriber();
     $subscriber->authStub = $client;
@@ -641,6 +681,9 @@ function exact_target_api_delete_subscriber($subscriber_key) {
  */
 function exact_target_api_update_subscriber($email, $props = array(), $subkey = NULL) {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   if (empty($subkey)) {
     // fetch the subscriber because we don't have the subkey
     $sub = exact_target_api_get_subscriber_by_email($email);
@@ -687,6 +730,9 @@ function exact_target_api_unsubscribe_master($email) {
  */
 function exact_target_api_get_subscriber_by_id($id, $key = 'SubscriberKey') {
   $client = exact_target_api_get_client();
+  if (!$client) {
+    return FALSE;
+  }
   try {
     $subscriber = new ET_Subscriber();
     $subscriber->authStub = $client;
