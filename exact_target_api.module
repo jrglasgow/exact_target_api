@@ -362,6 +362,10 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
   try {
     $response = $listsubscriber->get();
   }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
+
   return $response->results;
 }
 
@@ -388,6 +392,9 @@ function exact_target_api_get_organizations($props = array(), $filter = array())
   }
   try {
     $response = $org->get();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
   }
   return $response;
 }
