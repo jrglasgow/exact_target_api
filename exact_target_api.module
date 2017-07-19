@@ -77,6 +77,17 @@ function exact_target_api_get_attributes($filter = array()) {
 }
 
 /**
+ * log exceptions
+ */
+function exact_target_api_log($e) {
+  $errors = variable_get('error_level', 0);
+  if (user_access('administer site configuration') && $errors) {
+    drupal_set_message(t('Exception Occurred: %message', array('%message' => $e->getMessage())));
+  }
+  watchdog('exact_target_api', 'Exception Occurred: %message<br/><pre>@e</pre>', array('%message' => $e->getMessage(), '@e' => print_r($e, TRUE)), WATCHDOG_ERROR);
+}
+
+/**
  * Retrieves all lists for this account
  * @see https://developer.salesforce.com/docs/atlas.en-us.mc-sdks.meta/mc-sdks/list-retrieve.htm
  *
@@ -104,8 +115,13 @@ function exact_target_api_get_lists($props = array(), $filter = array(), $array_
   if (!empty($filter)) {
     $list->filter = $filter;
   }
+  try {
+    $response = $list->get();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
 
-  $response = $list->get();
 
   $old_lists = $response->results;
   $lists = array();
@@ -247,7 +263,12 @@ function exact_target_api_add_list($name, $description = 'SDK Created List', $ty
   $list = new ET_List();
   $list->authStub = $client;
   $list->props = array('ListName' => $name, 'Description' => $description, 'Type' => $type);
-  $results = $list->post();
+  try {
+    $results = $list->post();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
 
   return $results;
 }
@@ -267,7 +288,12 @@ function exact_target_api_delete_list($listid) {
   $list = new ET_List();
   $list->authStub = $client;
   $list->props = array('ID' => $listid);
-  $results = $list->delete();
+  try {
+    $results = $list->delete();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
 
   return $results;
 }
@@ -289,7 +315,12 @@ function exact_target_api_rename_list($listid, $name) {
   $list = new ET_List();
   $list->authStub = $client;
   $list->props = array('ID' => $listid, 'ListName'=> $name);
-  $results = $list->patch();
+  try {
+    $results = $list->patch();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
 
   return $results;
 }
@@ -328,7 +359,9 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
       'Value' => $listid,
     );
   }
-  $response = $listsubscriber->get();
+  try {
+    $response = $listsubscriber->get();
+  }
   return $response->results;
 }
 
@@ -353,7 +386,9 @@ function exact_target_api_get_organizations($props = array(), $filter = array())
   if (!empty(filter)) {
     $org->filter = $filter;
   }
-  $response = $org->get();
+  try {
+    $response = $org->get();
+  }
   return $response;
 }
 
@@ -378,7 +413,12 @@ function exact_target_api_get_users($props = array(), $filter = array()) {
   if (!empty(filter)) {
     $user->filter = $filter;
   }
-  $response = $user->get();
+  try {
+    $response = $user->get();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
   return $response;
 }
 
@@ -418,7 +458,12 @@ function exact_target_api_get_master_unsubscribe_list() {
       unset($response->results[$key]);
     }
   }
-  $response->results = array_values($response->results);
+  try {
+    $response->results = array_values($response->results);
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
   return $response;
 }
 
@@ -440,7 +485,12 @@ function exact_target_api_add_subscriber($listid, $email) {
   }
 
   $client = exact_target_api_get_client();
-  $response = $client->AddSubscriberToList($email, $listid, $email);
+  try {
+    $response = $client->AddSubscriberToList($email, $listid, $email);
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
   return $response;
 }
 
@@ -481,7 +531,12 @@ function exact_target_api_remove_subscriber($listid, $email, $subkey = NULL) {
     'SubscriberKey' => $subkey,
     'Lists' => $lists,
   );
-  $results = $subscriber->patch();
+  try {
+    $results = $subscriber->patch();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
 
   return $results;
 }
@@ -508,7 +563,12 @@ function exact_target_api_unsubscribe_all($email) {
     'SubscriberKey' => $sub->SubscriberKey,
     'Status' => 'Unsubscribed',
   );
-  $results = $subscriber->patch();
+  try {
+    $results = $subscriber->patch();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
 
   return $results;
 }
@@ -531,7 +591,12 @@ function exact_target_api_delete_subscriber($subscriber_key) {
   $subscriber = new ET_Subscriber();
   $subscriber->authStub = $client;
   $subscriber->props = array('SubscriberKey' => $subscriber_key);
-  $results = $subscriber->delete();
+  try {
+    $results = $subscriber->delete();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
   return $results;
 }
 
@@ -571,7 +636,12 @@ function exact_target_api_update_subscriber($email, $props = array(), $subkey = 
   $subscriber = new ET_Subscriber();
   $subscriber->authStub = $client;
   $subscriber->props = array_merge($default_props, $props);
-  $results = $subscriber->patch();
+  try {
+    $results = $subscriber->patch();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
   return $results;
 }
 
@@ -617,7 +687,12 @@ function exact_target_api_get_subscriber_by_id($id, $key = 'SubscriberKey') {
     'SimpleOperator' => 'equals',
     'Value' => $subscriber->SubscriberKey,
   );
-  $list_response = $listsubscriber->get();
+  try {
+    $list_response = $listsubscriber->get();
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
 
   $subscriber->lists = array();
   foreach ($list_response->results AS $this_list) {
