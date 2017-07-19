@@ -7,7 +7,7 @@
 // Include our constants
 
 require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'exact_target_api') . '/exact_target_api.module';
-define('FUELSDK_PHP_LIBRARY_MIN_VERSION', '.9');
+define('FUELSDK_PHP_LIBRARY_MIN_VERSION', '1.0');
 
 /**
  * Implements hook_requirements().
