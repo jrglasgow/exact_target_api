@@ -88,7 +88,7 @@ function exact_target_api_get_attributes($filter = array()) {
 function exact_target_api_log($e) {
   $errors = variable_get('error_level', 0);
   if (user_access('administer site configuration') && $errors) {
-    drupal_set_message(t('Exception Occurred: %message', array('%message' => $e->getMessage())));
+    drupal_set_message(t('Exception Occurred: %message', array('%message' => $e->getMessage())), 'error');
   }
   watchdog('exact_target_api', 'Exception Occurred: %message<br/><pre>@e</pre>', array('%message' => $e->getMessage(), '@e' => print_r($e, TRUE)), WATCHDOG_ERROR);
 }
