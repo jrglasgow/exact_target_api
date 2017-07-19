@@ -67,12 +67,18 @@ function _exact_target_api_set_config($cfg) {
  */
 function exact_target_api_get_attributes($filter = array()) {
   $client = exact_target_api_get_client();
-  $dataextensioncolumn = new ET_DataExtension_Column();
-  $dataextensioncolumn->authStub = $client;
-  if (!empty($filter)) {
-    $dataextensioncolumn->filter = $filter;
+  try {
+    $dataextensioncolumn = new ET_DataExtension_Column();
+    $dataextensioncolumn->authStub = $client;
+    if (!empty($filter)) {
+      $dataextensioncolumn->filter = $filter;
+    }
+    $response = $dataextensioncolumn->get();
   }
-  $response = $dataextensioncolumn->get();
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
+
   return $response;
 }
 
@@ -105,17 +111,17 @@ function exact_target_api_log($e) {
  */
 function exact_target_api_get_lists($props = array(), $filter = array(), $array_key = 'ID') {
   $client = exact_target_api_get_client();
-  $list = new ET_List();
-  $list->authStub = $client;
-
-  if (!empty($props)) {
-    $list->props = $props;
-  }
-
-  if (!empty($filter)) {
-    $list->filter = $filter;
-  }
   try {
+    $list = new ET_List();
+    $list->authStub = $client;
+
+    if (!empty($props)) {
+      $list->props = $props;
+    }
+
+    if (!empty($filter)) {
+      $list->filter = $filter;
+    }
     $response = $list->get();
   }
   catch (Exception $e) {
@@ -149,7 +155,12 @@ function exact_target_api_get_client() {
     //'appsignature' => $cfg[''],
     'xmlloc'  => 'https://webservice.' . $cfg['et_cfg_endpoint'] . '.exacttarget.com/etframework.wsdl',
   );
-  $myclient = new ET_Client(FALSE, FALSE, $params);
+  try {
+    $myclient = new ET_Client(FALSE, FALSE, $params);
+  }
+  catch (Exception $e) {
+    exact_target_api_log($e);
+  }
   return $myclient;
 }
 
@@ -260,10 +271,10 @@ function exact_target_api_get_list_info($list) {
  */
 function exact_target_api_add_list($name, $description = 'SDK Created List', $type = 'Public') {
   $client = exact_target_api_get_client();
-  $list = new ET_List();
-  $list->authStub = $client;
-  $list->props = array('ListName' => $name, 'Description' => $description, 'Type' => $type);
   try {
+    $list = new ET_List();
+    $list->authStub = $client;
+    $list->props = array('ListName' => $name, 'Description' => $description, 'Type' => $type);
     $results = $list->post();
   }
   catch (Exception $e) {
@@ -285,10 +296,10 @@ function exact_target_api_add_list($name, $description = 'SDK Created List', $ty
  */
 function exact_target_api_delete_list($listid) {
   $client = exact_target_api_get_client();
-  $list = new ET_List();
-  $list->authStub = $client;
-  $list->props = array('ID' => $listid);
   try {
+    $list = new ET_List();
+    $list->authStub = $client;
+    $list->props = array('ID' => $listid);
     $results = $list->delete();
   }
   catch (Exception $e) {
@@ -312,10 +323,10 @@ function exact_target_api_delete_list($listid) {
  */
 function exact_target_api_rename_list($listid, $name) {
   $client = exact_target_api_get_client();
-  $list = new ET_List();
-  $list->authStub = $client;
-  $list->props = array('ID' => $listid, 'ListName'=> $name);
   try {
+    $list = new ET_List();
+    $list->authStub = $client;
+    $list->props = array('ID' => $listid, 'ListName'=> $name);
     $results = $list->patch();
   }
   catch (Exception $e) {
@@ -343,23 +354,23 @@ function exact_target_api_rename_list($listid, $name) {
  */
 function exact_target_api_get_list_subscribers($listid = '', $status = '') {
   $client = exact_target_api_get_client();
-  $listsubscriber = new ET_List_Subscriber();
-  $listsubscriber->authStub = $client;
-  if (!empty($status)) {
-    $listsubscriber->filter = array(
-      'Property' => 'Status',
-      'SimpleOperator' => 'equals',
-      'Value' => $status,
-    );
-  }
-  if (!empty($listid)) {
-    $listsubscriber->filter = array(
-      'Property' => 'ListID',
-      'SimpleOperator' => 'equals',
-      'Value' => $listid,
-    );
-  }
   try {
+    $listsubscriber = new ET_List_Subscriber();
+    $listsubscriber->authStub = $client;
+    if (!empty($status)) {
+      $listsubscriber->filter = array(
+        'Property' => 'Status',
+        'SimpleOperator' => 'equals',
+        'Value' => $status,
+      );
+    }
+    if (!empty($listid)) {
+      $listsubscriber->filter = array(
+        'Property' => 'ListID',
+        'SimpleOperator' => 'equals',
+        'Value' => $listid,
+      );
+    }
     $response = $listsubscriber->get();
   }
   catch (Exception $e) {
@@ -382,15 +393,15 @@ function exact_target_api_get_list_subscribers($listid = '', $status = '') {
  */
 function exact_target_api_get_organizations($props = array(), $filter = array()) {
   $client = exact_target_api_get_client();
-  $org = new ET_Organization();
-  $org->authStub = $client;
-  if (!empty($props)) {
-    $org->props = $props;
-  }
-  if (!empty(filter)) {
-    $org->filter = $filter;
-  }
   try {
+    $org = new ET_Organization();
+    $org->authStub = $client;
+    if (!empty($props)) {
+      $org->props = $props;
+    }
+    if (!empty(filter)) {
+      $org->filter = $filter;
+    }
     $response = $org->get();
   }
   catch (Exception $e) {
@@ -412,15 +423,15 @@ function exact_target_api_get_organizations($props = array(), $filter = array())
  */
 function exact_target_api_get_users($props = array(), $filter = array()) {
   $client = exact_target_api_get_client();
-  $user = new ET_User();
-  $user->authStub = $client;
-  if (!empty($props)) {
-    $user->props = $props;
-  }
-  if (!empty(filter)) {
-    $user->filter = $filter;
-  }
   try {
+    $user = new ET_User();
+    $user->authStub = $client;
+    if (!empty($props)) {
+      $user->props = $props;
+    }
+    if (!empty(filter)) {
+      $user->filter = $filter;
+    }
     $response = $user->get();
   }
   catch (Exception $e) {
@@ -450,22 +461,22 @@ function exact_target_api_get_master_unsubscribe_list() {
   $master_list_id = $result->fetchField();
 
   $client = exact_target_api_get_client();
-  $listsubscriber = new ET_List_Subscriber();
-  $listsubscriber->authStub = $client;
-  // the SDK doesn't allow for multiple filters to be applied, just one
-  $listsubscriber->filter = array(
-    'Property' => 'Status',
-    'SimpleOperator' => 'equals',
-    'Value' => 'Unsubscribed',
-  );
-  $response = $listsubscriber->get();
-  foreach ($response->results AS $key => $subscriber) {
-    if ($subscriber->ListID != $master_list_id) {
-      // strip out all the subscribers not in the master list
-      unset($response->results[$key]);
-    }
-  }
   try {
+    $listsubscriber = new ET_List_Subscriber();
+    $listsubscriber->authStub = $client;
+    // the SDK doesn't allow for multiple filters to be applied, just one
+    $listsubscriber->filter = array(
+      'Property' => 'Status',
+      'SimpleOperator' => 'equals',
+      'Value' => 'Unsubscribed',
+    );
+    $response = $listsubscriber->get();
+    foreach ($response->results AS $key => $subscriber) {
+      if ($subscriber->ListID != $master_list_id) {
+        // strip out all the subscribers not in the master list
+        unset($response->results[$key]);
+      }
+    }
     $response->results = array_values($response->results);
   }
   catch (Exception $e) {
@@ -531,14 +542,13 @@ function exact_target_api_remove_subscriber($listid, $email, $subkey = NULL) {
     'ID' => $listid,
     'Status' => 'Unsubscribed',
   );
-
-  $subscriber = new ET_Subscriber();
-  $subscriber->authStub = $client;
-  $subscriber->props = array(
-    'SubscriberKey' => $subkey,
-    'Lists' => $lists,
-  );
   try {
+    $subscriber = new ET_Subscriber();
+    $subscriber->authStub = $client;
+    $subscriber->props = array(
+      'SubscriberKey' => $subkey,
+      'Lists' => $lists,
+    );
     $results = $subscriber->patch();
   }
   catch (Exception $e) {
@@ -563,14 +573,13 @@ function exact_target_api_remove_subscriber($listid, $email, $subkey = NULL) {
 function exact_target_api_unsubscribe_all($email) {
   $client = exact_target_api_get_client();
   $sub = exact_target_api_get_subscriber_by_email($email);
-
-  $subscriber = new ET_Subscriber();
-  $subscriber->authStub = $client;
-  $subscriber->props = array(
-    'SubscriberKey' => $sub->SubscriberKey,
-    'Status' => 'Unsubscribed',
-  );
   try {
+    $subscriber = new ET_Subscriber();
+    $subscriber->authStub = $client;
+    $subscriber->props = array(
+      'SubscriberKey' => $sub->SubscriberKey,
+      'Status' => 'Unsubscribed',
+    );
     $results = $subscriber->patch();
   }
   catch (Exception $e) {
@@ -595,10 +604,10 @@ function exact_target_api_unsubscribe_all($email) {
  */
 function exact_target_api_delete_subscriber($subscriber_key) {
   $client = exact_target_api_get_client();
-  $subscriber = new ET_Subscriber();
-  $subscriber->authStub = $client;
-  $subscriber->props = array('SubscriberKey' => $subscriber_key);
   try {
+    $subscriber = new ET_Subscriber();
+    $subscriber->authStub = $client;
+    $subscriber->props = array('SubscriberKey' => $subscriber_key);
     $results = $subscriber->delete();
   }
   catch (Exception $e) {
@@ -640,10 +649,10 @@ function exact_target_api_update_subscriber($email, $props = array(), $subkey = 
   $default_props = array(
     'SubscriberKey' => $subkey,
   );
-  $subscriber = new ET_Subscriber();
-  $subscriber->authStub = $client;
-  $subscriber->props = array_merge($default_props, $props);
   try {
+    $subscriber = new ET_Subscriber();
+    $subscriber->authStub = $client;
+    $subscriber->props = array_merge($default_props, $props);
     $results = $subscriber->patch();
   }
   catch (Exception $e) {
@@ -678,23 +687,23 @@ function exact_target_api_unsubscribe_master($email) {
  */
 function exact_target_api_get_subscriber_by_id($id, $key = 'SubscriberKey') {
   $client = exact_target_api_get_client();
-  $subscriber = new ET_Subscriber();
-  $subscriber->authStub = $client;
-  $subscriber->filter = array(
-    'Property' => $key,
-    'SimpleOperator' => 'equals',
-    'Value' => $id,
-  );
-  $sub_response = $subscriber->get();
-  $subscriber = $sub_response->results[0];
-  $listsubscriber = new ET_List_Subscriber();
-  $listsubscriber->authStub = $client;
-  $listsubscriber->filter = array(
-    'Property' => 'SubscriberKey',
-    'SimpleOperator' => 'equals',
-    'Value' => $subscriber->SubscriberKey,
-  );
   try {
+    $subscriber = new ET_Subscriber();
+    $subscriber->authStub = $client;
+    $subscriber->filter = array(
+      'Property' => $key,
+      'SimpleOperator' => 'equals',
+      'Value' => $id,
+    );
+    $sub_response = $subscriber->get();
+    $subscriber = $sub_response->results[0];
+    $listsubscriber = new ET_List_Subscriber();
+    $listsubscriber->authStub = $client;
+    $listsubscriber->filter = array(
+      'Property' => 'SubscriberKey',
+      'SimpleOperator' => 'equals',
+      'Value' => $subscriber->SubscriberKey,
+    );
     $list_response = $listsubscriber->get();
   }
   catch (Exception $e) {
