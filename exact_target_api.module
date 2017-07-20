@@ -161,6 +161,42 @@ function exact_target_api_get_client() {
     //'appsignature' => $cfg[''],
     'xmlloc'  => 'https://webservice.' . $cfg['et_cfg_endpoint'] . '.exacttarget.com/etframework.wsdl',
   );
+
+  if (module_exists('chr')) {
+    // load possible proxy settings that the cURL HTTP Request module
+    // ( https://www.drupal.org/project/chr ) uses in case it is how the system in
+    // configured
+    $chr_proxy_settings = variable_get('http_proxy', array());
+    if (!empty($proxy_settings)) {
+      if (!empty($chr_proxy_settings['server'])) {
+        $params['proxyhost'] = $chr_proxy_settings['server'];
+      }
+      if (!empty($chr_proxy_settings['port'])) {
+        $params['proxyport'] = $chr_proxy_settings['port'];
+      }
+      if (!empty($chr_proxy_settings['username'])) {
+        $params['proxyusername'] = $chr_proxy_settings['username'];
+      }
+      if (!empty($chr_proxy_settings['password'])) {
+        $params['proxypassword'] = $chr_proxy_settings['password'];
+      }
+    }
+  }
+  else {
+    // check is there are standard Drupal 7 proxy settings
+    if ($proxy_server = variable_get('proxy_server', FALSE)) {
+      $params['proxyhost'] = $proxy_server;
+    }
+    if ($proxy_port = variable_get('proxy_port', FALSE)) {
+      $params['proxyport'] = $proxy_port;
+    }
+    if ($proxy_username = variable_get('proxy_username', FALSE)) {
+      $params['proxyusername'] = $proxy_username;
+    }
+    if ($proxy_password = variable_get('proxy_password', FALSE)) {
+      $params['proxypassword'] = $proxy_password;
+    }
+  }
   try {
     $myclient = new ET_Client(FALSE, FALSE, $params);
   }
