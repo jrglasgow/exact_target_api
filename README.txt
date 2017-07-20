@@ -54,7 +54,6 @@ need to be set in Environment Variables
 
 -- TO DO --
 * update and test all api functions
-* cache WSDL to local file system
 
 
 -- CONTACT --

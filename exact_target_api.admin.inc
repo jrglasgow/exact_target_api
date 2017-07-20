@@ -61,6 +61,21 @@ function exact_target_api_configure_form($form, &$form_state) {
    '#required' => FALSE,
    );
   */
+
+  $form['exact_target_api_wsdl_cache_ttl'] = array(
+    '#type' => 'select',
+    '#title' => t('WSDL Cache Time To Live (TTL)'),
+    '#description' => t('The Web Service Definition Language (WSDL) file will be downloaded and cached locally to reduce network calls and sped up requests. How long do you want this cache to live?'),
+    '#default_value' => variable_get('exact_target_api_wsdl_cache_ttl', 604800),
+    '#options' => array(
+      0 => t('Don\'t cache'),
+      600 => t('10 minutes'),
+      3600 => t('1 hour'),
+      86400 => t('1 day'),
+      604800 => t('1 week'),
+    ),
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),

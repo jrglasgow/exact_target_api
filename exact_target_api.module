@@ -145,6 +145,44 @@ function exact_target_api_get_lists($props = array(), $filter = array(), $array_
 }
 
 /**
+ * retrieve the location of the cached WSDL, and cache it if needs to be cached
+ * or refreshed
+ */
+function exact_target_api_fetch_wsdl($cfg) {
+  $wsdl_uri = file_build_uri('exact_target_api.wsdl');
+  if ($wrapper = file_stream_wrapper_get_instance_by_uri($wsdl_uri)) {
+    $realpath = $wrapper->realpath();
+    $redownload = FALSE;
+    if (!file_exists($realpath)) {
+      $redownload = TRUE;
+    }
+    $ttl = $cfg['exact_target_api_wsdl_cache_ttl'] ?: 604800;
+    if (filemtime($realpath) + $ttl <= REQUEST_TIME) {
+      $redownload = TRUE;
+    }
+  }
+
+  $wsdl_url = 'https://webservice.' . $cfg['et_cfg_endpoint'] . '.exacttarget.com/etframework.wsdl';
+  if ($redownload) {
+    $response = drupal_http_request($wsdl_url);
+    if (floor($response->code/100)*100 == 200) {
+      file_put_contents($wsdl_uri, $response->data);
+    }
+    else {
+      watchdog('exact_target_api', 'Could not cache Exact Target WSDL: @code @status_message<br/><pre>@response</pre>', array('@code' => $response->code, '@status_message' => $response->status_message, '@response' => print_r($response, TRUE)), WATCHDOG_ERROR);
+    }
+  }
+  else if (isset($realpath) && !empty($realpath)) {
+    return $realpath;
+  }
+  else {
+    return FALSE;
+  }
+
+
+
+}
+/**
  * get an instance of the ET_Client with the current settings
  *
  * @return
@@ -153,13 +191,14 @@ function exact_target_api_get_lists($props = array(), $filter = array(), $array_
 function exact_target_api_get_client() {
   // WSDL and endpoint links are here https://developer.salesforce.com/docs/atlas.en-us.mc-apis.meta/mc-apis/getting_started_developers_and_the_exacttarget_api.htm
   $cfg = _exact_target_api_get_config();//return FALSE;
-  $library = libraries_load('FuelSDK-PHP');
+
   $params = array(
     //'defaultwsdl' => $cfg[''],
     'clientid' => $cfg['et_api_client_id'],
     'clientsecret' => $cfg['et_api_client_secret'],
     //'appsignature' => $cfg[''],
-    'xmlloc'  => 'https://webservice.' . $cfg['et_cfg_endpoint'] . '.exacttarget.com/etframework.wsdl',
+    'xmlloc'  => exact_target_api_fetch_wsdl($cfg),
+    'defaultwsdl' => 'https://webservice.' . $cfg['et_cfg_endpoint'] . '.exacttarget.com/etframework.wsdl',
   );
 
   if (module_exists('chr')) {
@@ -197,6 +236,7 @@ function exact_target_api_get_client() {
       $params['proxypassword'] = $proxy_password;
     }
   }
+  $library = libraries_load('FuelSDK-PHP');
   try {
     $myclient = new ET_Client(FALSE, FALSE, $params);
   }
